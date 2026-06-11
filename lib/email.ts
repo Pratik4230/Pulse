@@ -25,6 +25,38 @@ export async function sendEmail({ to, subject, text }: SendEmailInput) {
 
   if (error) {
     console.error("[email] Resend error:", error)
-    throw new Error(error.message)
   }
+}
+
+type OtpEmailType =
+  | "sign-in"
+  | "email-verification"
+  | "forget-password"
+  | "change-email"
+
+const otpSubjects: Record<OtpEmailType, string> = {
+  "email-verification": "Verify your Pulse email",
+  "sign-in": "Your Pulse sign-in code",
+  "forget-password": "Reset your Pulse password",
+  "change-email": "Confirm your new Pulse email",
+}
+
+export async function sendOtpEmail({
+  to,
+  otp,
+  type,
+}: {
+  to: string
+  otp: string
+  type: OtpEmailType
+}) {
+  const subject = otpSubjects[type]
+  const text =
+    type === "email-verification"
+      ? `Your Pulse verification code is ${otp}. It expires in 5 minutes.`
+      : type === "change-email"
+        ? `Your Pulse email change code is ${otp}. It expires in 5 minutes.`
+        : `Your Pulse code is ${otp}. It expires in 5 minutes.`
+
+  await sendEmail({ to, subject, text })
 }
