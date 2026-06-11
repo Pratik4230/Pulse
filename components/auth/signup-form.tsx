@@ -83,7 +83,7 @@ export function SignupForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <SocialButtons callbackURL="/" />
+        <SocialButtons />
 
         <FieldSeparator>or sign up with email</FieldSeparator>
 

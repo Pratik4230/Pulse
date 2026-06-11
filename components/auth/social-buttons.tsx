@@ -4,6 +4,7 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { signIn } from "@/lib/auth-client"
+import { APP_HOME_PATH } from "@/lib/constants"
 
 function GitHubIcon({ className }: { className?: string }) {
   return (
@@ -40,7 +41,7 @@ type SocialButtonsProps = {
   callbackURL?: string
 }
 
-export function SocialButtons({ callbackURL = "/" }: SocialButtonsProps) {
+export function SocialButtons({ callbackURL = APP_HOME_PATH }: SocialButtonsProps) {
   async function handleSocial(provider: "google" | "github") {
     await signIn.social(
       { provider, callbackURL },

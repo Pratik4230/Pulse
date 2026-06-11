@@ -1,9 +1,21 @@
 import Link from "next/link"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
+import { auth } from "@/lib/auth"
+import { APP_HOME_PATH } from "@/lib/constants"
 
-export default function Page() {
+export default async function Page() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+
+  if (session?.user.emailVerified) {
+    redirect(APP_HOME_PATH)
+  }
+
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-6">
       <div className="flex max-w-md flex-col items-center gap-3 text-center">

@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 import { useForm } from "@tanstack/react-form"
 import { toast } from "sonner"
 
@@ -27,12 +28,23 @@ import { Input } from "@/components/ui/input"
 import { Kbd } from "@/components/ui/kbd"
 import { useFormKeyboard } from "@/hooks/use-form-keyboard"
 import { signIn } from "@/lib/auth-client"
+import { getSafeRedirectPath } from "@/lib/constants"
 import { loginSchema } from "@/lib/validations/auth"
 
 const FORM_ID = "login-form"
 
 export function LoginForm() {
+  return (
+    <Suspense>
+      <LoginFormContent />
+    </Suspense>
+  )
+}
+
+function LoginFormContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = getSafeRedirectPath(searchParams.get("callbackUrl"))
 
   const form = useForm({
     defaultValues: {
@@ -48,12 +60,12 @@ export function LoginForm() {
         {
           email: value.email,
           password: value.password,
-          callbackURL: "/",
+          callbackURL: redirectTo,
         },
         {
           onSuccess: () => {
             toast.success("Welcome back")
-            router.push("/")
+            router.push(redirectTo)
             router.refresh()
           },
           onError: (ctx) => {
@@ -89,7 +101,7 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <SocialButtons callbackURL="/" />
+        <SocialButtons callbackURL={redirectTo} />
 
         <FieldSeparator>or continue with email</FieldSeparator>
 
