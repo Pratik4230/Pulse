@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 
-import { VerifyEmailForm } from "@/components/auth/verify-email-form"
+import { VerifyEmailForm } from "@/features/auth/components/verify-email-form"
 
 export default function VerifyEmailPage() {
   return (

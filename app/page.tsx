@@ -2,6 +2,7 @@ import Link from "next/link"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
+import { PulseLogo } from "@/components/brand/pulse-logo"
 import { Button } from "@/components/ui/button"
 import { Kbd } from "@/components/ui/kbd"
 import { auth } from "@/lib/auth"
@@ -19,9 +20,7 @@ export default async function Page() {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-6">
       <div className="flex max-w-md flex-col items-center gap-3 text-center">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">
-          Pulse
-        </h1>
+        <PulseLogo size={72} showLabel priority labelClassName="text-3xl" />
         <p className="text-sm text-muted-foreground">
           Your keyboard-first command center for email and calendar.
         </p>

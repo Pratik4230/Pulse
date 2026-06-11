@@ -1,9 +1,21 @@
 import { Geist, Geist_Mono, Inter } from "next/font/google"
+import type { Metadata } from "next"
 
 import "./globals.css"
+import { PULSE_ICON_PATH } from "@/components/brand/pulse-logo"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { cn } from "@/lib/utils"
+
+export const metadata: Metadata = {
+  title: "Pulse",
+  description:
+    "Your keyboard-first command center for email and calendar.",
+  icons: {
+    icon: PULSE_ICON_PATH,
+    apple: PULSE_ICON_PATH,
+  },
+}
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'})
 

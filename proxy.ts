@@ -17,11 +17,18 @@ function isPublicPath(pathname: string) {
   )
 }
 
+function isPublicStaticAsset(pathname: string) {
+  return /\.(?:png|jpe?g|gif|webp|svg|ico|woff2?|ttf|otf|eot)$/i.test(
+    pathname,
+  )
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (
     isPublicPath(pathname) ||
+    isPublicStaticAsset(pathname) ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico"

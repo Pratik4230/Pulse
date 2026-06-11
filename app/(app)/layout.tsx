@@ -1,17 +1,15 @@
 import { Providers } from "@/components/providers"
-import { AppHeader } from "@/components/pulse/app-header"
-import { AppSidebar } from "@/components/pulse/app-sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <Providers>
-      <div className="flex h-svh flex-col bg-background">
-        <AppHeader />
-        <div className="flex min-h-0 flex-1">
-          <AppSidebar />
+      <TooltipProvider>
+        <SidebarProvider className="h-svh overflow-hidden">
           {children}
-        </div>
-      </div>
+        </SidebarProvider>
+      </TooltipProvider>
     </Providers>
   )
 }

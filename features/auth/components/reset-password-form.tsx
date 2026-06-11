@@ -2,12 +2,10 @@
 
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Suspense } from "react"
 import { useForm } from "@tanstack/react-form"
 import { toast } from "sonner"
 
-import { FormShortcuts } from "@/components/auth/form-shortcuts"
-import { SocialButtons } from "@/components/auth/social-buttons"
+import { FormShortcuts } from "@/features/auth/components/form-shortcuts"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -19,68 +17,52 @@ import {
 } from "@/components/ui/card"
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Kbd } from "@/components/ui/kbd"
-import { useFormKeyboard } from "@/hooks/use-form-keyboard"
-import { signIn } from "@/lib/auth-client"
-import { getSafeRedirectPath } from "@/lib/constants"
-import { loginSchema } from "@/lib/validations/auth"
+import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
+import { resetPassword } from "@/lib/auth-client"
+import { resetPasswordSchema } from "@/features/auth/validations"
 
-const FORM_ID = "login-form"
+const FORM_ID = "reset-password-form"
 
-export function LoginForm() {
-  return (
-    <Suspense>
-      <LoginFormContent />
-    </Suspense>
-  )
-}
-
-function LoginFormContent() {
+export function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = getSafeRedirectPath(searchParams.get("callbackUrl"))
+  const token = searchParams.get("token")
+  const error = searchParams.get("error")
 
   const form = useForm({
     defaultValues: {
-      email: "",
       password: "",
+      confirmPassword: "",
     },
     validators: {
-      onSubmit: loginSchema,
-      onChange: loginSchema,
+      onSubmit: resetPasswordSchema,
+      onChange: resetPasswordSchema,
     },
     onSubmit: async ({ value }) => {
-      await signIn.email(
+      if (!token) {
+        toast.error("Reset link is invalid or expired")
+        return
+      }
+
+      await resetPassword(
         {
-          email: value.email,
-          password: value.password,
-          callbackURL: redirectTo,
+          newPassword: value.password,
+          token,
         },
         {
           onSuccess: () => {
-            toast.success("Welcome back")
-            router.push(redirectTo)
-            router.refresh()
+            toast.success("Password updated — you can sign in now")
+            router.push("/login")
           },
           onError: (ctx) => {
-            const message = ctx.error.message ?? "Invalid email or password"
-            if (
-              ctx.error.status === 403 ||
-              message.toLowerCase().includes("not verified")
-            ) {
-              toast.error("Verify your email before signing in")
-              router.push(
-                `/verify-email?email=${encodeURIComponent(value.email)}`,
-              )
-              return
-            }
-            toast.error(message)
+            toast.error(ctx.error.message ?? "Could not reset password")
           },
         },
       )
@@ -92,19 +74,35 @@ function LoginFormContent() {
     onEscape: () => form.reset(),
   })
 
+  if (error || !token) {
+    return (
+      <Card className="w-full sm:max-w-md">
+        <CardHeader>
+          <CardTitle>Link expired</CardTitle>
+          <CardDescription>
+            This password reset link is invalid or has expired. Request a new
+            one to continue.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter className="flex flex-col gap-3 border-t">
+          <Button asChild className="w-full">
+            <Link href="/forgot-password">Request new link</Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/login">Back to sign in</Link>
+          </Button>
+        </CardFooter>
+      </Card>
+    )
+  }
+
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>Sign in to Pulse</CardTitle>
-        <CardDescription>
-          Your keyboard-first command center for email and calendar.
-        </CardDescription>
+        <CardTitle>Reset password</CardTitle>
+        <CardDescription>Choose a new password for your account.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <SocialButtons callbackURL={redirectTo} />
-
-        <FieldSeparator>or continue with email</FieldSeparator>
-
+      <CardContent>
         <form
           id={FORM_ID}
           noValidate
@@ -114,21 +112,22 @@ function LoginFormContent() {
           }}
         >
           <FieldGroup>
-            <form.Field name="email">
+            <form.Field name="password">
               {(field) => {
                 const isInvalid =
                   field.state.meta.isDirty && !field.state.meta.isValid
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={`${FORM_ID}-email`}>Email</FieldLabel>
+                    <FieldLabel htmlFor={`${FORM_ID}-password`}>
+                      New password
+                    </FieldLabel>
                     <Input
-                      id={`${FORM_ID}-email`}
+                      id={`${FORM_ID}-password`}
                       name={field.name}
-                      type="email"
-                      inputMode="email"
-                      autoComplete="email"
+                      type="password"
+                      autoComplete="new-password"
                       autoFocus
-                      placeholder="you@example.com"
+                      placeholder="••••••••"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(event) =>
@@ -136,6 +135,10 @@ function LoginFormContent() {
                       }
                       aria-invalid={isInvalid}
                     />
+                    <FieldDescription>
+                      At least 8 characters with uppercase, lowercase, and a
+                      number.
+                    </FieldDescription>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
@@ -143,28 +146,20 @@ function LoginFormContent() {
                 )
               }}
             </form.Field>
-            <form.Field name="password">
+            <form.Field name="confirmPassword">
               {(field) => {
                 const isInvalid =
                   field.state.meta.isDirty && !field.state.meta.isValid
                 return (
                   <Field data-invalid={isInvalid}>
-                    <div className="flex items-center justify-between gap-2">
-                      <FieldLabel htmlFor={`${FORM_ID}-password`}>
-                        Password
-                      </FieldLabel>
-                      <Link
-                        href="/forgot-password"
-                        className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                      >
-                        Forgot password?
-                      </Link>
-                    </div>
+                    <FieldLabel htmlFor={`${FORM_ID}-confirm-password`}>
+                      Confirm new password
+                    </FieldLabel>
                     <Input
-                      id={`${FORM_ID}-password`}
+                      id={`${FORM_ID}-confirm-password`}
                       name={field.name}
                       type="password"
-                      autoComplete="current-password"
+                      autoComplete="new-password"
                       placeholder="••••••••"
                       value={field.state.value}
                       onBlur={field.handleBlur}
@@ -190,20 +185,11 @@ function LoginFormContent() {
           className="w-full"
           disabled={form.state.isSubmitting}
         >
-          Sign in
+          Update password
           <Kbd data-icon="inline-end" className="translate-x-0.5">
             ⏎
           </Kbd>
         </Button>
-        <p className="text-center text-sm text-muted-foreground">
-          No account?{" "}
-          <Link
-            href="/signup"
-            className="font-medium text-foreground underline-offset-4 hover:underline"
-          >
-            Create one
-          </Link>
-        </p>
         <FormShortcuts />
       </CardFooter>
     </Card>

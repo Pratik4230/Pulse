@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.69",
+    "@ai-sdk/react": "^3.0.203",
     "@corsair-dev/cli": "^0.1.19",
     "@corsair-dev/gmail": "^0.1.4",
     "@corsair-dev/googlecalendar": "^0.1.3",

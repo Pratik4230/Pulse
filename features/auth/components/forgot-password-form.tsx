@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useForm } from "@tanstack/react-form"
 import { toast } from "sonner"
 
-import { FormShortcuts } from "@/components/auth/form-shortcuts"
+import { FormShortcuts } from "@/features/auth/components/form-shortcuts"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -17,9 +17,9 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Kbd } from "@/components/ui/kbd"
-import { useFormKeyboard } from "@/hooks/use-form-keyboard"
+import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
 import { requestPasswordReset } from "@/lib/auth-client"
-import { forgotPasswordSchema } from "@/lib/validations/auth"
+import { forgotPasswordSchema } from "@/features/auth/validations"
 
 const FORM_ID = "forgot-password-form"
 

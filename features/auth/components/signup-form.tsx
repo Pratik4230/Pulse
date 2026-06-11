@@ -1,11 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useForm } from "@tanstack/react-form"
 import { toast } from "sonner"
 
-import { FormShortcuts } from "@/components/auth/form-shortcuts"
+import { FormShortcuts } from "@/features/auth/components/form-shortcuts"
+import { SocialButtons } from "@/features/auth/components/social-buttons"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -21,48 +22,47 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Kbd } from "@/components/ui/kbd"
-import { useFormKeyboard } from "@/hooks/use-form-keyboard"
-import { resetPassword } from "@/lib/auth-client"
-import { resetPasswordSchema } from "@/lib/validations/auth"
+import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
+import { signUp } from "@/lib/auth-client"
+import { signupSchema } from "@/features/auth/validations"
 
-const FORM_ID = "reset-password-form"
+const FORM_ID = "signup-form"
 
-export function ResetPasswordForm() {
+export function SignupForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const token = searchParams.get("token")
-  const error = searchParams.get("error")
 
   const form = useForm({
     defaultValues: {
+      name: "",
+      email: "",
       password: "",
       confirmPassword: "",
     },
     validators: {
-      onSubmit: resetPasswordSchema,
-      onChange: resetPasswordSchema,
+      onSubmit: signupSchema,
+      onChange: signupSchema,
     },
     onSubmit: async ({ value }) => {
-      if (!token) {
-        toast.error("Reset link is invalid or expired")
-        return
-      }
-
-      await resetPassword(
+      await signUp.email(
         {
-          newPassword: value.password,
-          token,
+          name: value.name,
+          email: value.email,
+          password: value.password,
         },
         {
           onSuccess: () => {
-            toast.success("Password updated — you can sign in now")
-            router.push("/login")
+            toast.success("Check your email for a verification code")
+            router.push(
+              `/verify-email?email=${encodeURIComponent(value.email)}`,
+            )
+            router.refresh()
           },
           onError: (ctx) => {
-            toast.error(ctx.error.message ?? "Could not reset password")
+            toast.error(ctx.error.message ?? "Could not create account")
           },
         },
       )
@@ -74,35 +74,19 @@ export function ResetPasswordForm() {
     onEscape: () => form.reset(),
   })
 
-  if (error || !token) {
-    return (
-      <Card className="w-full sm:max-w-md">
-        <CardHeader>
-          <CardTitle>Link expired</CardTitle>
-          <CardDescription>
-            This password reset link is invalid or has expired. Request a new
-            one to continue.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter className="flex flex-col gap-3 border-t">
-          <Button asChild className="w-full">
-            <Link href="/forgot-password">Request new link</Link>
-          </Button>
-          <Button asChild variant="outline" className="w-full">
-            <Link href="/login">Back to sign in</Link>
-          </Button>
-        </CardFooter>
-      </Card>
-    )
-  }
-
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>Reset password</CardTitle>
-        <CardDescription>Choose a new password for your account.</CardDescription>
+        <CardTitle>Create your Pulse account</CardTitle>
+        <CardDescription>
+          Sign up to unify your inbox, calendar, and notifications.
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
+        <SocialButtons />
+
+        <FieldSeparator>or sign up with email</FieldSeparator>
+
         <form
           id={FORM_ID}
           noValidate
@@ -112,6 +96,62 @@ export function ResetPasswordForm() {
           }}
         >
           <FieldGroup>
+            <form.Field name="name">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isDirty && !field.state.meta.isValid
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={`${FORM_ID}-name`}>Name</FieldLabel>
+                    <Input
+                      id={`${FORM_ID}-name`}
+                      name={field.name}
+                      type="text"
+                      autoComplete="name"
+                      autoFocus
+                      placeholder="Alex Chen"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      aria-invalid={isInvalid}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                )
+              }}
+            </form.Field>
+            <form.Field name="email">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isDirty && !field.state.meta.isValid
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={`${FORM_ID}-email`}>Email</FieldLabel>
+                    <Input
+                      id={`${FORM_ID}-email`}
+                      name={field.name}
+                      type="email"
+                      inputMode="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      aria-invalid={isInvalid}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                )
+              }}
+            </form.Field>
             <form.Field name="password">
               {(field) => {
                 const isInvalid =
@@ -119,14 +159,13 @@ export function ResetPasswordForm() {
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={`${FORM_ID}-password`}>
-                      New password
+                      Password
                     </FieldLabel>
                     <Input
                       id={`${FORM_ID}-password`}
                       name={field.name}
                       type="password"
                       autoComplete="new-password"
-                      autoFocus
                       placeholder="••••••••"
                       value={field.state.value}
                       onBlur={field.handleBlur}
@@ -153,7 +192,7 @@ export function ResetPasswordForm() {
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={`${FORM_ID}-confirm-password`}>
-                      Confirm new password
+                      Confirm password
                     </FieldLabel>
                     <Input
                       id={`${FORM_ID}-confirm-password`}
@@ -185,11 +224,20 @@ export function ResetPasswordForm() {
           className="w-full"
           disabled={form.state.isSubmitting}
         >
-          Update password
+          Create account
           <Kbd data-icon="inline-end" className="translate-x-0.5">
             ⏎
           </Kbd>
         </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            Sign in
+          </Link>
+        </p>
         <FormShortcuts />
       </CardFooter>
     </Card>

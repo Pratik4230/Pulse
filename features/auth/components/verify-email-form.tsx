@@ -6,7 +6,7 @@ import { useForm } from "@tanstack/react-form"
 import { useState } from "react"
 import { toast } from "sonner"
 
-import { FormShortcuts } from "@/components/auth/form-shortcuts"
+import { FormShortcuts } from "@/features/auth/components/form-shortcuts"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -30,9 +30,9 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { Kbd } from "@/components/ui/kbd"
-import { useFormKeyboard } from "@/hooks/use-form-keyboard"
+import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
 import { emailOtp } from "@/lib/auth-client"
-import { verifyOtpSchema } from "@/lib/validations/auth"
+import { verifyOtpSchema } from "@/features/auth/validations"
 
 const FORM_ID = "verify-email-form"
 

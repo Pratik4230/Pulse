@@ -1,5 +1,7 @@
 import Link from "next/link"
 
+import { PulseLogo } from "@/components/brand/pulse-logo"
+
 export default function AuthLayout({
   children,
 }: {
@@ -9,9 +11,9 @@ export default function AuthLayout({
     <div className="flex min-h-svh flex-col items-center justify-center gap-8 bg-background p-6">
       <Link
         href="/"
-        className="font-heading text-lg font-semibold tracking-tight transition-opacity hover:opacity-80"
+        className="transition-opacity hover:opacity-80"
       >
-        Pulse
+        <PulseLogo size={40} showLabel priority />
       </Link>
       {children}
     </div>

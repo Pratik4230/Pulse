@@ -7,6 +7,12 @@
       "skillPath": "skills/ai-elements/SKILL.md",
       "computedHash": "7e81acdd3028bb68aa4387b2bd083c5812a50e2be1bea08c76994dcfb8f6a3d3"
     },
+    "ai-sdk": {
+      "source": "vercel/ai",
+      "sourceType": "github",
+      "skillPath": "skills/use-ai-sdk/SKILL.md",
+      "computedHash": "7ed1d9712b9bac9cd0506394c772717698720a28499183a0cd8d6a4c0424ca60"
+    },
     "corsair": {
       "source": "corsairdev/corsair",
       "sourceType": "github",

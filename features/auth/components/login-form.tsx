@@ -1,12 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 import { useForm } from "@tanstack/react-form"
 import { toast } from "sonner"
 
-import { FormShortcuts } from "@/components/auth/form-shortcuts"
-import { SocialButtons } from "@/components/auth/social-buttons"
+import { FormShortcuts } from "@/features/auth/components/form-shortcuts"
+import { SocialButtons } from "@/features/auth/components/social-buttons"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -18,7 +19,6 @@ import {
 } from "@/components/ui/card"
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -26,43 +26,61 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Kbd } from "@/components/ui/kbd"
-import { useFormKeyboard } from "@/hooks/use-form-keyboard"
-import { signUp } from "@/lib/auth-client"
-import { signupSchema } from "@/lib/validations/auth"
+import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
+import { signIn } from "@/lib/auth-client"
+import { getSafeRedirectPath } from "@/lib/constants"
+import { loginSchema } from "@/features/auth/validations"
 
-const FORM_ID = "signup-form"
+const FORM_ID = "login-form"
 
-export function SignupForm() {
+export function LoginForm() {
+  return (
+    <Suspense>
+      <LoginFormContent />
+    </Suspense>
+  )
+}
+
+function LoginFormContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = getSafeRedirectPath(searchParams.get("callbackUrl"))
 
   const form = useForm({
     defaultValues: {
-      name: "",
       email: "",
       password: "",
-      confirmPassword: "",
     },
     validators: {
-      onSubmit: signupSchema,
-      onChange: signupSchema,
+      onSubmit: loginSchema,
+      onChange: loginSchema,
     },
     onSubmit: async ({ value }) => {
-      await signUp.email(
+      await signIn.email(
         {
-          name: value.name,
           email: value.email,
           password: value.password,
+          callbackURL: redirectTo,
         },
         {
           onSuccess: () => {
-            toast.success("Check your email for a verification code")
-            router.push(
-              `/verify-email?email=${encodeURIComponent(value.email)}`,
-            )
+            toast.success("Welcome back")
+            router.push(redirectTo)
             router.refresh()
           },
           onError: (ctx) => {
-            toast.error(ctx.error.message ?? "Could not create account")
+            const message = ctx.error.message ?? "Invalid email or password"
+            if (
+              ctx.error.status === 403 ||
+              message.toLowerCase().includes("not verified")
+            ) {
+              toast.error("Verify your email before signing in")
+              router.push(
+                `/verify-email?email=${encodeURIComponent(value.email)}`,
+              )
+              return
+            }
+            toast.error(message)
           },
         },
       )
@@ -77,15 +95,15 @@ export function SignupForm() {
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
-        <CardTitle>Create your Pulse account</CardTitle>
+        <CardTitle>Sign in to Pulse</CardTitle>
         <CardDescription>
-          Sign up to unify your inbox, calendar, and notifications.
+          Your keyboard-first command center for email and calendar.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <SocialButtons />
+        <SocialButtons callbackURL={redirectTo} />
 
-        <FieldSeparator>or sign up with email</FieldSeparator>
+        <FieldSeparator>or continue with email</FieldSeparator>
 
         <form
           id={FORM_ID}
@@ -96,34 +114,6 @@ export function SignupForm() {
           }}
         >
           <FieldGroup>
-            <form.Field name="name">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isDirty && !field.state.meta.isValid
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={`${FORM_ID}-name`}>Name</FieldLabel>
-                    <Input
-                      id={`${FORM_ID}-name`}
-                      name={field.name}
-                      type="text"
-                      autoComplete="name"
-                      autoFocus
-                      placeholder="Alex Chen"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.target.value)
-                      }
-                      aria-invalid={isInvalid}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                )
-              }}
-            </form.Field>
             <form.Field name="email">
               {(field) => {
                 const isInvalid =
@@ -137,6 +127,7 @@ export function SignupForm() {
                       type="email"
                       inputMode="email"
                       autoComplete="email"
+                      autoFocus
                       placeholder="you@example.com"
                       value={field.state.value}
                       onBlur={field.handleBlur}
@@ -158,47 +149,22 @@ export function SignupForm() {
                   field.state.meta.isDirty && !field.state.meta.isValid
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={`${FORM_ID}-password`}>
-                      Password
-                    </FieldLabel>
+                    <div className="flex items-center justify-between gap-2">
+                      <FieldLabel htmlFor={`${FORM_ID}-password`}>
+                        Password
+                      </FieldLabel>
+                      <Link
+                        href="/forgot-password"
+                        className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
                     <Input
                       id={`${FORM_ID}-password`}
                       name={field.name}
                       type="password"
-                      autoComplete="new-password"
-                      placeholder="••••••••"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.target.value)
-                      }
-                      aria-invalid={isInvalid}
-                    />
-                    <FieldDescription>
-                      At least 8 characters with uppercase, lowercase, and a
-                      number.
-                    </FieldDescription>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                )
-              }}
-            </form.Field>
-            <form.Field name="confirmPassword">
-              {(field) => {
-                const isInvalid =
-                  field.state.meta.isDirty && !field.state.meta.isValid
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={`${FORM_ID}-confirm-password`}>
-                      Confirm password
-                    </FieldLabel>
-                    <Input
-                      id={`${FORM_ID}-confirm-password`}
-                      name={field.name}
-                      type="password"
-                      autoComplete="new-password"
+                      autoComplete="current-password"
                       placeholder="••••••••"
                       value={field.state.value}
                       onBlur={field.handleBlur}
@@ -224,18 +190,18 @@ export function SignupForm() {
           className="w-full"
           disabled={form.state.isSubmitting}
         >
-          Create account
+          Sign in
           <Kbd data-icon="inline-end" className="translate-x-0.5">
             ⏎
           </Kbd>
         </Button>
         <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
+          No account?{" "}
           <Link
-            href="/login"
+            href="/signup"
             className="font-medium text-foreground underline-offset-4 hover:underline"
           >
-            Sign in
+            Create one
           </Link>
         </p>
         <FormShortcuts />
