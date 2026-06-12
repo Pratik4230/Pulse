@@ -1,7 +1,10 @@
 "use client"
 
-import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
+import { Sparkles } from "lucide-react"
+
 import { Separator } from "@/components/ui/separator"
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
+import { cn } from "@/lib/utils"
 import {
   PulseSidebar,
   type ChatSession,
@@ -32,13 +35,25 @@ export function AppShell({
         onNewChat={onNewChat}
         onSelectSession={onSelectSession}
       />
-      <SidebarInset className="flex h-full min-h-0 flex-col overflow-hidden">
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+      <SidebarInset className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
+        <header
+          className={cn(
+            "flex h-12 shrink-0 items-center gap-2 border-b border-border/60 px-4",
+            "bg-background/80 backdrop-blur-md",
+          )}
+        >
           <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <h1 className="truncate text-sm font-medium">{title}</h1>
+          <Separator orientation="vertical" className="mr-1 h-4" />
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <Sparkles className="size-3.5 shrink-0 text-muted-foreground" />
+            <h1 className="truncate text-sm font-medium tracking-tight">
+              {title}
+            </h1>
+          </div>
         </header>
-        <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          {children}
+        </div>
       </SidebarInset>
     </>
   )

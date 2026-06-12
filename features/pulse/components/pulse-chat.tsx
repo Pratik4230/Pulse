@@ -2,21 +2,13 @@
 
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { Fragment, useCallback } from "react"
-
-import { PulseLogo } from "@/components/brand/pulse-logo"
+import { useCallback } from "react"
 
 import {
   Conversation,
   ConversationContent,
-  ConversationEmptyState,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation"
-import {
-  Message,
-  MessageContent,
-  MessageResponse,
-} from "@/components/ai-elements/message"
 import {
   PromptInput,
   PromptInputBody,
@@ -25,15 +17,11 @@ import {
   PromptInputTextarea,
   type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input"
-import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion"
 import { Shimmer } from "@/components/ai-elements/shimmer"
+import { cn } from "@/lib/utils"
 
-const STARTER_PROMPTS = [
-  "What can Pulse do for my inbox and calendar?",
-  "How do I connect Gmail to Pulse?",
-  "Draft a polite meeting follow-up email",
-  "Plan my day around email and calendar tasks",
-] as const
+import { PulseEmptyState } from "./pulse-empty-state"
+import { PulseMessage } from "./pulse-message"
 
 type PulseChatProps = {
   onFirstMessage?: (title: string) => void
@@ -71,66 +59,58 @@ export function PulseChat({ onFirstMessage }: PulseChatProps) {
   )
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <Conversation className="min-h-0 flex-1 overflow-hidden">
-        <ConversationContent className="mx-auto w-full max-w-3xl gap-6 px-4 pb-4">
+    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(1_0_0/0.03),transparent_55%)]"
+      />
+
+      <Conversation className="relative h-full min-h-0 flex-1">
+        <ConversationContent className="mx-auto w-full max-w-3xl gap-8 px-4 pb-6 pt-2 md:px-6">
           {messages.length === 0 ? (
-            <ConversationEmptyState
-              className="min-h-0 flex-1"
-              description="Ask about email, calendar, or what to tackle next. Pulse is your command center."
-              icon={<PulseLogo size={48} />}
-              title="What should we work on?"
-            />
+            <PulseEmptyState onSuggestion={handleSuggestion} />
           ) : (
             messages.map((message) => (
-              <Message key={message.id} from={message.role}>
-                <MessageContent>
-                  {message.parts.map((part, index) => (
-                    <Fragment key={`${message.id}-${index}`}>
-                      {part.type === "text" ? (
-                        <MessageResponse>{part.text}</MessageResponse>
-                      ) : null}
-                    </Fragment>
-                  ))}
-                </MessageContent>
-              </Message>
+              <PulseMessage key={message.id} message={message} />
             ))
           )}
+
           {status === "submitted" && (
-            <Message from="assistant">
-              <MessageContent>
-                <Shimmer>Thinking…</Shimmer>
-              </MessageContent>
-            </Message>
+            <div className="flex gap-3 pr-4">
+              <div className="size-8 shrink-0" />
+              <div className="rounded-2xl border border-border/50 bg-card/40 px-4 py-3 shadow-sm backdrop-blur-sm">
+                <Shimmer className="text-sm text-muted-foreground">
+                  Thinking…
+                </Shimmer>
+              </div>
+            </div>
           )}
-          {error && (
-            <p className="text-center text-sm text-destructive">
+
+          {error ? (
+            <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
               {error.message}
             </p>
-          )}
+          ) : null}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="shrink-0 border-t bg-background/80 px-4 py-4 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-3">
-          {messages.length === 0 && (
-            <Suggestions>
-              {STARTER_PROMPTS.map((prompt) => (
-                <Suggestion
-                  key={prompt}
-                  onClick={handleSuggestion}
-                  suggestion={prompt}
-                />
-              ))}
-            </Suggestions>
-          )}
-
-          <PromptInput onSubmit={handleSubmit}>
+      <div className="relative shrink-0 border-t border-border/60 bg-background/85 px-4 py-4 backdrop-blur-xl md:px-6">
+        <div className="mx-auto w-full max-w-3xl">
+          <PromptInput
+            onSubmit={handleSubmit}
+            className={cn(
+              "overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-lg shadow-black/5",
+              "ring-1 ring-white/5 transition-shadow focus-within:border-foreground/15 focus-within:ring-foreground/5",
+            )}
+          >
             <PromptInputBody>
-              <PromptInputTextarea placeholder="Message Pulse…" />
+              <PromptInputTextarea
+                className="min-h-12 resize-none bg-transparent px-4 py-3.5 text-[15px]"
+                placeholder="Message Pulse…"
+              />
             </PromptInputBody>
-            <PromptInputFooter>
+            <PromptInputFooter className="border-t border-border/50 bg-muted/20 px-3 py-2">
               <span className="text-xs text-muted-foreground">
                 Pulse can make mistakes. Verify important actions.
               </span>

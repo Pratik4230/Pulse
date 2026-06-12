@@ -1,3 +1,5 @@
+"use client"
+
 import type { LucideIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -53,7 +55,7 @@ export function IntegrationCard({
         </div>
       </CardHeader>
       {!comingSoon && connectPath ? (
-        <CardFooter className="justify-end gap-2 border-t bg-muted/20 px-6 py-4">
+        <CardFooter className="justify-end border-t bg-muted/20 px-6 py-4">
           {connected ? (
             <Button variant="outline" asChild>
               <a href={connectPath}>Reconnect</a>

@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Inbox,
   LogOut,
+  MessageSquare,
   MessageSquarePlus,
   Plug,
   Sparkles,
@@ -128,7 +129,9 @@ export function PulseSidebar({
                         isActive={chat.id === activeSessionId}
                         onClick={() => onSelectSession(chat.id)}
                         tooltip={chat.title}
+                        className="group/chat"
                       >
+                        <MessageSquare className="size-4 shrink-0 text-muted-foreground group-data-[active=true]/chat:text-foreground" />
                         <span className="truncate">{chat.title}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
