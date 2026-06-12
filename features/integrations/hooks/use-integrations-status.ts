@@ -1,0 +1,27 @@
+import { useQuery } from "@tanstack/react-query"
+
+import type {
+  IntegrationId,
+  IntegrationStatus,
+} from "@/features/integrations/types"
+
+export type IntegrationsStatusResponse = {
+  integrations: Record<IntegrationId, IntegrationStatus>
+}
+
+async function fetchIntegrationStatus() {
+  const response = await fetch("/api/integrations/status")
+
+  if (!response.ok) {
+    throw new Error("Failed to load integrations")
+  }
+
+  return response.json() as Promise<IntegrationsStatusResponse>
+}
+
+export function useIntegrationsStatus() {
+  return useQuery({
+    queryKey: ["integrations", "status"],
+    queryFn: fetchIntegrationStatus,
+  })
+}

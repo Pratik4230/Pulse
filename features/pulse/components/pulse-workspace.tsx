@@ -3,9 +3,9 @@
 import { nanoid } from "nanoid"
 import { useCallback, useState } from "react"
 
-import { AppShell } from "@/features/app/components/app-shell"
-import { PulseChat } from "@/features/chat/components/pulse-chat"
-import type { ChatSession } from "@/features/chat/components/pulse-sidebar"
+import { AppShell } from "@/features/pulse/components/app-shell"
+import { PulseChat } from "@/features/pulse/components/pulse-chat"
+import type { ChatSession } from "@/features/pulse/components/pulse-sidebar"
 
 function createSession(title = "New chat"): ChatSession {
   return { id: nanoid(), title }
@@ -33,11 +33,11 @@ export function PulseWorkspace() {
         current.map((session) =>
           session.id === activeSessionId
             ? { ...session, title: title || "New chat" }
-            : session
-        )
+            : session,
+        ),
       )
     },
-    [activeSessionId]
+    [activeSessionId],
   )
 
   const activeTitle =

@@ -6,9 +6,10 @@ import {
   Inbox,
   LogOut,
   MessageSquarePlus,
+  Plug,
   Sparkles,
 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { PulseLogo } from "@/components/brand/pulse-logo"
@@ -42,10 +43,10 @@ export type ChatSession = {
 }
 
 type PulseSidebarProps = {
-  sessions: ChatSession[]
-  activeSessionId: string
-  onNewChat: () => void
-  onSelectSession: (id: string) => void
+  sessions?: ChatSession[]
+  activeSessionId?: string
+  onNewChat?: () => void
+  onSelectSession?: (id: string) => void
 }
 
 function getInitials(name?: string | null, email?: string | null) {
@@ -67,8 +68,8 @@ export function PulseSidebar({
   onSelectSession,
 }: PulseSidebarProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const { data: session } = useSession()
-
   async function handleSignOut() {
     await signOut({
       fetchOptions: {
@@ -102,50 +103,60 @@ export function PulseSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={onNewChat} tooltip="New chat">
-                  <MessageSquarePlus />
-                  <span>New chat</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {sessions && onNewChat && onSelectSession ? (
+          <>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={onNewChat} tooltip="New chat">
+                      <MessageSquarePlus />
+                      <span>New chat</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Chats</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {sessions.map((chat) => (
-                <SidebarMenuItem key={chat.id}>
-                  <SidebarMenuButton
-                    isActive={chat.id === activeSessionId}
-                    onClick={() => onSelectSession(chat.id)}
-                    tooltip={chat.title}
-                  >
-                    <span className="truncate">{chat.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel>Chats</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {sessions.map((chat) => (
+                    <SidebarMenuItem key={chat.id}>
+                      <SidebarMenuButton
+                        isActive={chat.id === activeSessionId}
+                        onClick={() => onSelectSession(chat.id)}
+                        tooltip={chat.title}
+                      >
+                        <span className="truncate">{chat.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        ) : null}
 
-        <SidebarGroup className="mt-auto">
+        <SidebarGroup
+          className={
+            sessions && onNewChat && onSelectSession ? undefined : "mt-0"
+          }
+        >
           <SidebarGroupLabel>Workspace</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  isActive
-                  tooltip="Chat"
-                  className="pointer-events-none"
+                  asChild
+                  isActive={pathname === "/pulse"}
+                  tooltip="Assistant"
                 >
-                  <Sparkles />
-                  <span>Assistant</span>
+                  <Link href="/pulse">
+                    <Sparkles />
+                    <span>Assistant</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -164,6 +175,18 @@ export function PulseSidebar({
                   <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground">
                     Soon
                   </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith("/settings/integrations")}
+                  tooltip="Integrations"
+                >
+                  <Link href="/settings/integrations">
+                    <Plug />
+                    <span>Integrations</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -201,12 +224,17 @@ export function PulseSidebar({
                 align="start"
                 sideOffset={4}
               >
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/integrations">
+                    <Plug className={cn("size-4")} />
+                    Integrations
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className={cn("size-4")} />
                   Sign out
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem disabled>Settings (soon)</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

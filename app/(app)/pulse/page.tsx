@@ -1,4 +1,4 @@
-import { PulseWorkspace } from "@/features/chat/components/pulse-workspace"
+import { PulseWorkspace } from "@/features/pulse/components/pulse-workspace"
 
 export default function PulsePage() {
   return <PulseWorkspace />

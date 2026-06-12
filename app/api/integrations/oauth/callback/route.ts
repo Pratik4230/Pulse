@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server"
 import { processOAuthCallback } from "corsair/oauth"
 
-import { corsair } from "@/features/integrations/corsair/corsair"
-import { APP_HOME_PATH } from "@/lib/constants"
+import { corsair } from "@/features/integrations/core/corsair/corsair"
 import {
   getAppBaseUrl,
   getCorsairOAuthRedirectUri,
-} from "@/lib/corsair-oauth"
+} from "@/features/integrations/core/lib/oauth"
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
@@ -32,7 +31,7 @@ export async function GET(request: Request) {
       redirectUri: getCorsairOAuthRedirectUri(),
     })
 
-    const successUrl = new URL(APP_HOME_PATH, getAppBaseUrl())
+    const successUrl = new URL("/settings/integrations", getAppBaseUrl())
     successUrl.searchParams.set("connected", result.plugin)
     return NextResponse.redirect(successUrl)
   } catch (err) {

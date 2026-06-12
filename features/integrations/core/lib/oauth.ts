@@ -1,6 +1,3 @@
-/** Corsair tenant used until auth user id is wired per account. */
-export const CORSAIR_TENANT_ID = "default"
-
 export function getAppBaseUrl() {
   const raw =
     process.env.BETTER_AUTH_URL ??
@@ -11,5 +8,5 @@ export function getAppBaseUrl() {
 }
 
 export function getCorsairOAuthRedirectUri() {
-  return `${getAppBaseUrl()}/api/corsair/oauth/callback`
+  return `${getAppBaseUrl()}/api/integrations/oauth/callback`
 }

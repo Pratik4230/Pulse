@@ -1,7 +1,7 @@
 import { convertToModelMessages, streamText, type UIMessage } from "ai"
 
 import { auth } from "@/lib/auth"
-import { PULSE_CHAT_MODEL, PULSE_SYSTEM_PROMPT } from "@/features/chat/server/ai"
+import { PULSE_CHAT_MODEL, PULSE_SYSTEM_PROMPT } from "@/features/pulse/server/ai"
 
 export const maxDuration = 60
 
