@@ -131,7 +131,7 @@ export function PulseSidebar({
                         tooltip={chat.title}
                         className="group/chat"
                       >
-                        <MessageSquare className="size-4 shrink-0 text-muted-foreground group-data-[active=true]/chat:text-foreground" />
+                        <MessageSquare className="size-4 shrink-0 text-muted-foreground group-data-[active=true]/chat:text-primary" />
                         <span className="truncate">{chat.title}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

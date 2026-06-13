@@ -26,13 +26,13 @@ function EmailCard({
   return (
     <article
       className={cn(
-        "group relative overflow-hidden rounded-xl border border-border/60 bg-card/80 p-4",
-        "shadow-sm transition-colors hover:border-foreground/15 hover:bg-card",
+        "group relative overflow-hidden rounded-xl border border-border/70 bg-card p-4",
+        "shadow-elevated transition-all hover:border-warm-muted/40 hover:shadow-[0_4px_16px_hsl(30_15%_35%/0.1)]",
       )}
     >
-      <div className="absolute inset-y-0 left-0 w-0.5 bg-foreground/20" />
+      <div className="absolute inset-y-0 left-0 w-0.5 bg-warm-muted/60" />
       <div className="flex items-start gap-3 pl-2">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/60 text-muted-foreground">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-warm/30 text-warm-muted">
           <Mail className="size-4" />
         </div>
         <div className="min-w-0 flex-1 space-y-1.5">
@@ -64,10 +64,11 @@ function MarkdownSection({
   return (
     <MessageResponse
       className={cn(
-        "prose prose-sm dark:prose-invert max-w-none",
+        "prose prose-sm max-w-none dark:prose-invert",
         "prose-p:leading-relaxed prose-p:text-foreground/90",
-        "prose-strong:text-foreground prose-li:text-foreground/90",
-        "prose-a:text-foreground/80 prose-a:no-underline hover:prose-a:underline",
+        "prose-strong:font-semibold prose-strong:text-foreground",
+        "prose-li:text-foreground/90",
+        "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
         className,
       )}
     >
@@ -83,10 +84,11 @@ export function PulseRichContent({ text, className }: PulseRichContentProps) {
     return (
       <MessageResponse
         className={cn(
-          "prose prose-sm dark:prose-invert max-w-none",
+          "prose prose-sm max-w-none dark:prose-invert",
           "prose-p:leading-relaxed prose-p:text-foreground/90",
-          "prose-strong:text-foreground prose-li:text-foreground/90",
-          "prose-a:text-foreground/80 prose-a:no-underline hover:prose-a:underline",
+          "prose-strong:font-semibold prose-strong:text-foreground",
+          "prose-li:text-foreground/90",
+          "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
           className,
         )}
       >

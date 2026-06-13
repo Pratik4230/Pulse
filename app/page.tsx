@@ -4,7 +4,6 @@ import { redirect } from "next/navigation"
 
 import { PulseLogo } from "@/components/brand/pulse-logo"
 import { Button } from "@/components/ui/button"
-import { Kbd } from "@/components/ui/kbd"
 import { auth } from "@/lib/auth"
 import { APP_HOME_PATH } from "@/lib/constants"
 
@@ -34,7 +33,7 @@ export default async function Page() {
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
-        Press <Kbd>d</Kbd> to toggle dark mode
+        Built for teams who live in email and calendar.
       </p>
     </div>
   )

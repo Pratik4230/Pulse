@@ -39,18 +39,18 @@ export function PulseEmptyState({ onSuggestion }: PulseEmptyStateProps) {
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
-        <div className="absolute left-1/2 top-1/3 size-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground/[0.03] blur-3xl" />
-        <div className="absolute right-1/4 top-1/2 size-48 rounded-full bg-foreground/[0.02] blur-3xl" />
+        <div className="absolute top-1/3 left-1/2 size-112 -translate-x-1/2 -translate-y-1/2 rounded-full bg-warm/25 blur-3xl" />
+        <div className="absolute top-1/2 right-1/4 size-48 rounded-full bg-warm-muted/15 blur-3xl" />
       </div>
 
       <div className="relative flex flex-col items-center text-center">
-        <div className="rounded-2xl border border-border/60 bg-card/50 p-3 shadow-sm backdrop-blur-sm">
+        <div className="shadow-elevated-lg rounded-2xl border border-border/70 bg-card p-3">
           <PulseLogo size={52} imageClassName="size-[52px]" />
         </div>
-        <h2 className="mt-6 text-2xl font-semibold tracking-tight">
+        <h2 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
           What should we work on?
         </h2>
-        <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-2 max-w-md text-[15px] leading-relaxed text-muted-foreground">
           Ask about email, calendar, or what to tackle next. Pulse is your
           command center.
         </p>
@@ -63,18 +63,18 @@ export function PulseEmptyState({ onSuggestion }: PulseEmptyStateProps) {
             type="button"
             onClick={() => onSuggestion(card.label)}
             className={cn(
-              "group flex items-start gap-3 rounded-xl border border-border/60 bg-card/50 p-4 text-left",
-              "shadow-sm transition-all hover:border-foreground/15 hover:bg-card hover:shadow-md",
+              "group flex items-start gap-3 rounded-xl border border-border/70 bg-card p-4 text-left",
+              "shadow-elevated transition-all hover:border-warm-muted/40 hover:shadow-[0_4px_16px_hsl(30_15%_35%/0.1)]"
             )}
           >
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-muted/60 text-muted-foreground transition-colors group-hover:border-foreground/10 group-hover:bg-muted">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-warm/30 text-warm-muted transition-colors group-hover:bg-warm/45">
               <card.icon className="size-4" />
             </div>
             <div className="min-w-0 space-y-1">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <p className="text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
                 {card.hint}
               </p>
-              <p className="text-sm font-medium leading-snug text-foreground">
+              <p className="text-sm leading-snug font-medium text-foreground">
                 {card.label}
               </p>
             </div>

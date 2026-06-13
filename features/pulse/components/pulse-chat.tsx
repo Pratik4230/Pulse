@@ -62,7 +62,7 @@ export function PulseChat({ onFirstMessage }: PulseChatProps) {
     <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(1_0_0/0.03),transparent_55%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(0.88_0.09_68/0.14),transparent_62%)] dark:bg-[radial-gradient(ellipse_at_top,oklch(1_0_0/0.03),transparent_55%)]"
       />
 
       <Conversation className="relative h-full min-h-0 flex-1">
@@ -78,7 +78,7 @@ export function PulseChat({ onFirstMessage }: PulseChatProps) {
           {status === "submitted" && (
             <div className="flex gap-3 pr-4">
               <div className="size-8 shrink-0" />
-              <div className="rounded-2xl border border-border/50 bg-card/40 px-4 py-3 shadow-sm backdrop-blur-sm">
+              <div className="shadow-elevated rounded-2xl border border-border/60 bg-card px-4 py-3">
                 <Shimmer className="text-sm text-muted-foreground">
                   Thinking…
                 </Shimmer>
@@ -95,22 +95,22 @@ export function PulseChat({ onFirstMessage }: PulseChatProps) {
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="relative shrink-0 border-t border-border/60 bg-background/85 px-4 py-4 backdrop-blur-xl md:px-6">
+      <div className="relative shrink-0 border-t border-border/80 bg-card/90 px-4 py-4 backdrop-blur-xl md:px-6">
         <div className="mx-auto w-full max-w-3xl">
           <PromptInput
             onSubmit={handleSubmit}
             className={cn(
-              "overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-lg shadow-black/5",
-              "ring-1 ring-white/5 transition-shadow focus-within:border-foreground/15 focus-within:ring-foreground/5",
+              "shadow-elevated-lg overflow-hidden rounded-2xl border border-border/80 bg-card",
+              "transition-shadow focus-within:border-warm-muted/50 focus-within:shadow-[0_0_0_3px_oklch(0.88_0.09_68/0.2)]",
             )}
           >
             <PromptInputBody>
               <PromptInputTextarea
-                className="min-h-12 resize-none bg-transparent px-4 py-3.5 text-[15px]"
+                className="min-h-12 resize-none bg-transparent px-4 py-3.5 text-[15px] placeholder:text-muted-foreground/70"
                 placeholder="Message Pulse…"
               />
             </PromptInputBody>
-            <PromptInputFooter className="border-t border-border/50 bg-muted/20 px-3 py-2">
+            <PromptInputFooter className="border-t border-border/60 bg-muted/40 px-3 py-2">
               <span className="text-xs text-muted-foreground">
                 Pulse can make mistakes. Verify important actions.
               </span>

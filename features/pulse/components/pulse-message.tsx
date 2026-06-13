@@ -20,7 +20,7 @@ export function PulseUserMessage({ text }: { text: string }) {
       <div
         className={cn(
           "max-w-[min(85%,42rem)] rounded-2xl rounded-br-md px-4 py-3",
-          "border border-border/80 bg-muted/50 text-sm leading-relaxed text-foreground shadow-sm",
+          "border border-border bg-accent/60 text-sm leading-relaxed text-foreground shadow-elevated",
         )}
       >
         {text}
@@ -32,7 +32,7 @@ export function PulseUserMessage({ text }: { text: string }) {
 export function PulseAssistantMessage({ message }: PulseMessageProps) {
   return (
     <div className="flex gap-3 pr-4">
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border/70 bg-card shadow-sm">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border/60 bg-card shadow-elevated">
         <PulseLogo size={18} imageClassName="size-[18px] rounded-md" />
       </div>
       <div className="min-w-0 flex-1 space-y-3">
@@ -41,8 +41,7 @@ export function PulseAssistantMessage({ message }: PulseMessageProps) {
             {part.type === "text" ? (
               <div
                 className={cn(
-                  "rounded-2xl rounded-tl-md border border-border/60 bg-card/60 px-4 py-3.5",
-                  "shadow-sm",
+                  "shadow-elevated rounded-2xl rounded-tl-md border border-border/60 bg-card px-4 py-3.5",
                 )}
               >
                 <PulseRichContent text={part.text} />
