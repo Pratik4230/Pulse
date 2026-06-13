@@ -6,6 +6,7 @@ import {
   getAppBaseUrl,
   getCorsairOAuthRedirectUri,
 } from "@/features/integrations/core/lib/oauth"
+import { invalidateIntegrationStatusCache } from "@/features/integrations/core/server/tenant"
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
@@ -30,6 +31,8 @@ export async function GET(request: Request) {
       state,
       redirectUri: getCorsairOAuthRedirectUri(),
     })
+
+    invalidateIntegrationStatusCache(result.tenantId)
 
     const successUrl = new URL("/settings/integrations", getAppBaseUrl())
     successUrl.searchParams.set("connected", result.plugin)

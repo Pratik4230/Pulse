@@ -23,5 +23,7 @@ export function useIntegrationsStatus() {
   return useQuery({
     queryKey: ["integrations", "status"],
     queryFn: fetchIntegrationStatus,
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
   })
 }
