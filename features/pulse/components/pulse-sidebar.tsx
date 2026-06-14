@@ -175,12 +175,15 @@ export function PulseSidebar({
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton disabled tooltip="Coming soon">
-                  <CalendarDays />
-                  <span>Calendar</span>
-                  <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground">
-                    Soon
-                  </span>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === "/calendar"}
+                  tooltip="Calendar"
+                >
+                  <Link href="/calendar">
+                    <CalendarDays />
+                    <span>Calendar</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>

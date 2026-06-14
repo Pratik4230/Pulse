@@ -11,9 +11,11 @@ import type {
 
 export type { IntegrationId, IntegrationStatus }
 
-const PLUGIN_IDS: IntegrationId[] = ["gmail", "googlecalendar"]
-
 const ensuredTenants = new Set<string>()
+
+type OAuthKeys = {
+  get_refresh_token: () => Promise<string | null>
+}
 
 const statusCache = new Map<
   string,
@@ -53,8 +55,12 @@ export async function getIntegrationStatuses(
   const dekByPlugin = new Map(rows.map((row) => [row.name, row.dek]))
 
   const value = {
-    gmail: pluginStatus(dekByPlugin.get("gmail")),
-    googlecalendar: pluginStatus(dekByPlugin.get("googlecalendar")),
+    gmail: await oauthPluginStatus(tenantId, "gmail", dekByPlugin.get("gmail")),
+    googlecalendar: await oauthPluginStatus(
+      tenantId,
+      "googlecalendar",
+      dekByPlugin.get("googlecalendar"),
+    ),
   } satisfies Record<IntegrationId, IntegrationStatus>
 
   statusCache.set(tenantId, {
@@ -65,8 +71,25 @@ export async function getIntegrationStatuses(
   return value
 }
 
-function pluginStatus(dek: string | null | undefined): IntegrationStatus {
-  return dek ? "connected" : "not_connected"
+async function oauthPluginStatus(
+  tenantId: string,
+  pluginId: IntegrationId,
+  dek: string | null | undefined,
+): Promise<IntegrationStatus> {
+  if (!dek) return "not_connected"
+
+  await ensureCorsairTenant(tenantId)
+
+  const keys = getOAuthKeys(tenantId, pluginId)
+  const refreshToken = await keys.get_refresh_token()
+
+  return refreshToken ? "connected" : "missing_credentials"
+}
+
+function getOAuthKeys(tenantId: string, pluginId: IntegrationId): OAuthKeys {
+  const client = corsair.withTenant(tenantId)
+  return (pluginId === "gmail" ? client.gmail.keys : client.googlecalendar
+    .keys) as OAuthKeys
 }
 
 export function invalidateIntegrationStatusCache(tenantId: string) {

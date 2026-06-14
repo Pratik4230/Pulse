@@ -13,8 +13,9 @@ const STARTER_CARDS = [
   },
   {
     icon: CalendarDays,
-    label: "What's on my calendar today?",
-    hint: "Calendar",
+    label:
+      "Schedule a first-round interview with pratik@gmail.com tomorrow at 2pm and send a confirmation email",
+    hint: "Schedule + email",
   },
   {
     icon: Mail,

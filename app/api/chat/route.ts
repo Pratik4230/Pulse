@@ -7,6 +7,7 @@ import {
 } from "ai"
 
 import { auth } from "@/lib/auth"
+import { gmailRawGetProfile } from "@/features/inbox/server/gmail-raw"
 import { getAppBaseUrl } from "@/features/integrations/core/lib/oauth"
 import {
   ensureCorsairTenant,
@@ -16,8 +17,18 @@ import {
   buildPulseSystemPrompt,
   PULSE_CHAT_MODEL,
 } from "@/features/pulse/server/ai"
+import { createPulseTools } from "@/features/pulse/server/tools"
 
 export const maxDuration = 60
+
+async function resolveSenderEmail(tenantId: string, fallbackEmail: string) {
+  try {
+    const profile = await gmailRawGetProfile(tenantId)
+    return profile.emailAddress?.trim() || fallbackEmail
+  } catch {
+    return fallbackEmail
+  }
+}
 
 export async function POST(req: Request) {
   const session = await auth.api.getSession({
@@ -41,7 +52,15 @@ export async function POST(req: Request) {
   let mcpClient: Awaited<ReturnType<typeof createVercelAiMcpClient>> | undefined
 
   try {
-    const tools = hasConnectedIntegration
+    const senderEmail = await resolveSenderEmail(tenantId, session.user.email)
+
+    const pulseTools = createPulseTools({
+      tenantId,
+      senderEmail,
+      integrations,
+    })
+
+    const mergedTools = hasConnectedIntegration
       ? await (async () => {
           mcpClient = await createVercelAiMcpClient({
             url: `${getAppBaseUrl()}/api/mcp`,
@@ -49,9 +68,15 @@ export async function POST(req: Request) {
               cookie: req.headers.get("cookie") ?? "",
             },
           })
-          return mcpClient.tools()
+          const mcpTools = await mcpClient.tools()
+          return { ...pulseTools, ...mcpTools }
         })()
-      : undefined
+      : pulseTools
+
+    const tools =
+      Object.keys(mergedTools).length > 0
+        ? (mergedTools as NonNullable<Parameters<typeof streamText>[0]["tools"]>)
+        : undefined
 
     const system = mcpClient?.instructions
       ? `${buildPulseSystemPrompt(integrations)}\n\n${mcpClient.instructions}`

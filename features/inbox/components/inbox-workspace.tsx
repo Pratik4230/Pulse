@@ -22,7 +22,6 @@ export function InboxWorkspace() {
   const { data: statusData, isLoading: isStatusLoading } =
     useIntegrationsStatus()
   const gmailConnected = statusData?.integrations.gmail === "connected"
-  const inboxEnabled = statusData?.integrations.gmail !== "not_connected"
 
   const {
     messages,
@@ -33,7 +32,7 @@ export function InboxWorkspace() {
     hasNextPage,
     fetchNextPage,
     refetch: refetchList,
-  } = useInboxMessages(filter, inboxEnabled)
+  } = useInboxMessages(filter, gmailConnected)
 
   const displaySelectedId = useMemo(() => {
     if (!messages?.length) return null

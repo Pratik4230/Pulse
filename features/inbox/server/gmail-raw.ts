@@ -162,23 +162,41 @@ async function gmailRawFetch<T>(
   query?: Record<string, string | number | undefined>,
   metadataHeaders?: string[],
 ): Promise<T> {
+  return gmailRawRequest<T>(tenantId, path, { query, metadataHeaders })
+}
+
+async function gmailRawRequest<T>(
+  tenantId: string,
+  path: string,
+  options?: {
+    method?: "GET" | "POST"
+    query?: Record<string, string | number | undefined>
+    body?: unknown
+    metadataHeaders?: string[]
+  },
+): Promise<T> {
   let token = await resolveGmailAccessToken(tenantId)
 
   async function request(accessToken: string) {
     const url = new URL(`${GMAIL_API}${path}`)
-    if (query) {
-      for (const [key, value] of Object.entries(query)) {
+    if (options?.query) {
+      for (const [key, value] of Object.entries(options.query)) {
         if (value != null) url.searchParams.set(key, String(value))
       }
     }
-    if (metadataHeaders) {
-      for (const header of metadataHeaders) {
+    if (options?.metadataHeaders) {
+      for (const header of options.metadataHeaders) {
         url.searchParams.append("metadataHeaders", header)
       }
     }
 
     return fetch(url, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      method: options?.method ?? "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        ...(options?.body ? { "Content-Type": "application/json" } : {}),
+      },
+      body: options?.body ? JSON.stringify(options.body) : undefined,
     })
   }
 
@@ -194,6 +212,53 @@ async function gmailRawFetch<T>(
   }
 
   return response.json() as Promise<T>
+}
+
+function encodeGmailRawMessage(message: string) {
+  return Buffer.from(message, "utf-8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "")
+}
+
+export type GmailRawSendInput = {
+  to: string
+  subject: string
+  body: string
+  from: string
+}
+
+export async function gmailRawSendMessage(
+  tenantId: string,
+  input: GmailRawSendInput,
+) {
+  const to = input.to.trim()
+  const subject = input.subject.trim()
+  const from = input.from.trim()
+
+  if (!to || !subject || !from) {
+    throw new Error("To, subject, and from are required to send email")
+  }
+
+  const mime = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    "MIME-Version: 1.0",
+    "Content-Type: text/plain; charset=utf-8",
+    "",
+    input.body,
+  ].join("\r\n")
+
+  return gmailRawRequest<{ id?: string }>(tenantId, "/users/me/messages/send", {
+    method: "POST",
+    body: { raw: encodeGmailRawMessage(mime) },
+  })
+}
+
+export async function gmailRawGetProfile(tenantId: string) {
+  return gmailRawFetch<{ emailAddress?: string }>(tenantId, "/users/me/profile")
 }
 
 export async function gmailRawListMessages(
