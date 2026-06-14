@@ -61,7 +61,7 @@ function formatEventTime(event: CalendarEventItem) {
 
   const start = parseEventDate(event.start, false)
   const end = parseEventDate(event.end, false)
-  return `${formatTime(start)} – ${formatTime(end)}`
+  return `${formatTime(start)} to ${formatTime(end)}`
 }
 
 function getDayKey(event: CalendarEventItem) {

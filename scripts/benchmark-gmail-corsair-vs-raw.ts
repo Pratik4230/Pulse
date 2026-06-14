@@ -4,7 +4,7 @@
  * Run:  bun run benchmark:gmail
  *       BENCHMARK_TENANT_ID=your-user-id bun run benchmark:gmail
  *
- * Does NOT change production code — diagnostic only.
+ * Does NOT change production code, diagnostic only.
  */
 
 import "dotenv/config"
@@ -39,7 +39,7 @@ async function time<T>(
 }
 
 function printResult(result: TimedResult<unknown>) {
-  const suffix = result.detail ? ` — ${result.detail}` : ""
+  const suffix = result.detail ? `, ${result.detail}` : ""
   console.log(`  ${result.label.padEnd(42)} ${String(result.ms).padStart(6)}ms${suffix}`)
 }
 
@@ -98,7 +98,7 @@ async function rawFetch<T>(
 
 async function main() {
   const tenantId = await resolveTenantId()
-  console.log(`\nGmail benchmark — tenant: ${tenantId}\n`)
+  console.log(`\nGmail benchmark, tenant: ${tenantId}\n`)
 
   const setup = await time("setupCorsair", () =>
     setupCorsair(corsair, { tenantId }),
@@ -108,7 +108,7 @@ async function main() {
   const gmail = corsair.withTenant(tenantId).gmail
   const token = await gmail.keys.get_access_token()
   if (!token) {
-    throw new Error("No Gmail access token — connect Gmail first.")
+    throw new Error("No Gmail access token, connect Gmail first.")
   }
   console.log("  access token loaded\n")
 
@@ -228,7 +228,7 @@ Likely Corsair overhead (not Google):
   • setupCorsair / credential checks on cold paths
   • Event logging (logEventFromContext)
 
-Raw Gmail API latency alone is usually hundreds of ms — not 5–10s.
+Raw Gmail API latency alone is usually hundreds of ms, not 5-10s.
 Switching inbox to raw API (with stored OAuth tokens) would likely help a lot,
 but you'd lose Corsair's automatic DB cache unless you add your own.
 `)

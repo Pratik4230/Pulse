@@ -206,7 +206,7 @@ export async function getInboxThread(
   }
 }
 
-/** @deprecated Use getInboxThread — kept for compatibility. */
+/** @deprecated Use getInboxThread, kept for compatibility. */
 export async function getInboxMessage(
   tenantId: string,
   messageId: string,

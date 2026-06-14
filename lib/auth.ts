@@ -5,7 +5,35 @@ import { emailOTP } from "better-auth/plugins"
 
 import { db } from "@/db"
 import * as authSchema from "@/db/schema/auth"
+import { COUNTRY_CODES, getCurrencyByCountry } from "@/lib/currencies"
 import { sendEmail, sendOtpEmail } from "@/lib/email"
+import { getDefaultTimezone, getTimezoneOptions } from "@/lib/timezones"
+
+function normalizeLocaleFields<T extends Record<string, unknown>>(record: T) {
+  const country =
+    typeof record.country === "string" ? record.country.trim().toUpperCase() : ""
+
+  if (!country || !COUNTRY_CODES.includes(country)) {
+    return record
+  }
+
+  const currency = getCurrencyByCountry(country).code
+  const timezoneInput =
+    typeof record.timezone === "string" ? record.timezone.trim() : ""
+  const allowedTimezones = new Set(
+    getTimezoneOptions(country).map((option) => option.value),
+  )
+  const timezone = allowedTimezones.has(timezoneInput)
+    ? timezoneInput
+    : getDefaultTimezone(country)
+
+  return {
+    ...record,
+    country,
+    currency,
+    timezone,
+  }
+}
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -14,6 +42,37 @@ export const auth = betterAuth({
     provider: "pg",
     schema: authSchema,
   }),
+  user: {
+    additionalFields: {
+      country: {
+        type: "string",
+        required: false,
+      },
+      currency: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      timezone: {
+        type: "string",
+        required: false,
+      },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (userRecord) => ({
+          data: normalizeLocaleFields(userRecord),
+        }),
+      },
+      update: {
+        before: async (userRecord) => ({
+          data: normalizeLocaleFields(userRecord),
+        }),
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,

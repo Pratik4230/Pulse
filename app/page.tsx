@@ -6,13 +6,23 @@ import { PulseLogo } from "@/components/brand/pulse-logo"
 import { Button } from "@/components/ui/button"
 import { auth } from "@/lib/auth"
 import { APP_HOME_PATH } from "@/lib/constants"
+import { userHasLocale } from "@/lib/locale"
 
 export default async function Page() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+  let session = null
+
+  try {
+    session = await auth.api.getSession({
+      headers: await headers(),
+    })
+  } catch {
+    // Database unreachable (e.g. transient Neon DNS). Show landing page.
+  }
 
   if (session?.user.emailVerified) {
+    if (!userHasLocale(session.user)) {
+      redirect("/onboarding/locale")
+    }
     redirect(APP_HOME_PATH)
   }
 

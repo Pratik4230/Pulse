@@ -14,7 +14,7 @@ declare global {
   var __pulseMcpSessions: Map<string, McpSession> | undefined
 }
 
-/** Shared across route handlers — in-memory Maps reset per module otherwise. */
+/** Shared across route handlers, in-memory Maps reset per module otherwise. */
 const sessions =
   globalThis.__pulseMcpSessions ?? new Map<string, McpSession>()
 globalThis.__pulseMcpSessions = sessions

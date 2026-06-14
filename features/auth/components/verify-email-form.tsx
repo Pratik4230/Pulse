@@ -52,7 +52,7 @@ export function VerifyEmailForm() {
     },
     onSubmit: async ({ value }) => {
       if (!email) {
-        toast.error("Missing email — sign up again to receive a code")
+        toast.error("Missing email. Sign up again to receive a code")
         return
       }
 
@@ -63,7 +63,7 @@ export function VerifyEmailForm() {
         },
         {
           onSuccess: () => {
-            toast.success("Email verified — you can sign in now")
+            toast.success("Email verified. You can sign in now")
             router.push("/login")
             router.refresh()
           },
@@ -82,7 +82,7 @@ export function VerifyEmailForm() {
 
   async function handleResend() {
     if (!email) {
-      toast.error("Missing email — sign up again to receive a code")
+      toast.error("Missing email, sign up again to receive a code")
       return
     }
 

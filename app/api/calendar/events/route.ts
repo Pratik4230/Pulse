@@ -8,6 +8,7 @@ import {
   ensureCorsairTenant,
   getIntegrationStatuses,
 } from "@/features/integrations/core/server/tenant"
+import { resolveUserLocale } from "@/lib/locale"
 import { createRequestTimer } from "@/lib/request-timer"
 
 export const runtime = "nodejs"
@@ -108,9 +109,10 @@ export async function POST(request: Request) {
     )
 
     const body = (await request.json()) as CreateCalendarEventInput
+    const locale = resolveUserLocale(session.user)
 
     const event = await timer.time("create_calendar_event", () =>
-      createCalendarEvent(tenantId, body),
+      createCalendarEvent(tenantId, body, { timeZone: locale.timezone }),
     )
 
     return timer.json({ event })

@@ -10,7 +10,7 @@ type InboxEmailBodyProps = {
   className?: string
 }
 
-/** White email card — iframe cannot read app CSS variables. */
+/** White email card, iframe cannot read app CSS variables. */
 const EMAIL_SURFACE = "#ffffff"
 const EMAIL_TEXT = "#1c1917"
 const EMAIL_MUTED = "#78716c"

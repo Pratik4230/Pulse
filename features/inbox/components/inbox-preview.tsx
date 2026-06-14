@@ -80,7 +80,7 @@ export function InboxPreview({
           </div>
           {isConversation ? (
             <p className="text-xs text-muted-foreground">
-              Conversation thread — older replies are shown below. Quoted text
+              Conversation thread. Older replies are shown below. Quoted text
               can be expanded per message.
             </p>
           ) : null}

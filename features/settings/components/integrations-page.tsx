@@ -43,7 +43,7 @@ export function IntegrationsPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Integrations</h1>
         <p className="text-sm text-muted-foreground">
           Connect the apps Pulse can act on for your account. Assistant chat
-          stays focused — connections live here.
+          stays focused. Connections live here.
         </p>
       </div>
 

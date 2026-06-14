@@ -26,7 +26,7 @@ export function ToolActivity({ part }: ToolActivityProps) {
     return (
       <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2">
         <p className="text-sm text-muted-foreground">
-          {label} — something went wrong.
+          {label}: something went wrong.
         </p>
       </div>
     )

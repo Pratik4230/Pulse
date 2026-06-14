@@ -49,7 +49,7 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Warm bisque & stone — eye-pleasing, not raw white */
+/* Warm bisque & stone: eye-pleasing, not raw white */
 :root {
     /* Canvas ~ #F3EFE8 */
     --background: oklch(0.952 0.02 75);
@@ -59,7 +59,7 @@
     --card-foreground: oklch(0.34 0.028 58);
     --popover: oklch(0.975 0.014 78);
     --popover-foreground: oklch(0.34 0.028 58);
-    /* Warm stone brown — buttons & links */
+    /* Warm stone brown: buttons & links */
     --primary: oklch(0.4 0.045 58);
     --primary-foreground: oklch(0.98 0.01 78);
     --secondary: oklch(0.92 0.025 72);

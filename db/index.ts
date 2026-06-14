@@ -13,7 +13,13 @@ function createPool() {
     throw new Error("DATABASE_URL is not set")
   }
 
-  return new Pool({ connectionString: normalizeDatabaseUrl(connectionString) })
+  return new Pool({
+    connectionString: normalizeDatabaseUrl(connectionString),
+    connectionTimeoutMillis: 10_000,
+    idleTimeoutMillis: 30_000,
+    keepAlive: true,
+    max: 10,
+  })
 }
 
 /** Avoid pg-connection-string v3 SSL deprecation warning (Neon uses sslmode=require). */
@@ -36,7 +42,7 @@ function normalizeDatabaseUrl(connectionString: string) {
   }
 }
 
-/** Shared pg pool — pass this to Corsair `createCorsair({ database: pool })`. */
+/** Shared pg pool, pass this to Corsair `createCorsair({ database: pool })`. */
 export const pool = globalThis.__pulsePgPool ?? createPool()
 
 if (process.env.NODE_ENV !== "production") {

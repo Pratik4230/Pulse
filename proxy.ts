@@ -9,6 +9,7 @@ const PUBLIC_PATHS = [
   "/forgot-password",
   "/reset-password",
   "/verify-email",
+  "/onboarding",
 ]
 
 function isPublicPath(pathname: string) {
@@ -38,7 +39,7 @@ export async function proxy(request: NextRequest) {
 
   const session = await auth.api.getSession({
     headers: request.headers,
-  })
+  }).catch(() => null)
 
   if (!session) {
     const loginUrl = new URL("/login", request.url)

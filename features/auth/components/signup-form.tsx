@@ -26,8 +26,11 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Kbd } from "@/components/ui/kbd"
+import { LocaleFields } from "@/features/auth/components/locale-fields"
 import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
 import { signUp } from "@/lib/auth-client"
+import { DEFAULT_COUNTRY } from "@/lib/currencies"
+import { getDefaultTimezone } from "@/lib/timezones"
 import { signupSchema } from "@/features/auth/validations"
 
 const FORM_ID = "signup-form"
@@ -41,6 +44,8 @@ export function SignupForm() {
       email: "",
       password: "",
       confirmPassword: "",
+      country: DEFAULT_COUNTRY,
+      timezone: getDefaultTimezone(DEFAULT_COUNTRY),
     },
     validators: {
       onSubmit: signupSchema,
@@ -52,6 +57,8 @@ export function SignupForm() {
           name: value.name,
           email: value.email,
           password: value.password,
+          country: value.country,
+          timezone: value.timezone,
         },
         {
           onSuccess: () => {
@@ -149,6 +156,35 @@ export function SignupForm() {
                       <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
+                )
+              }}
+            </form.Field>
+            <form.Field name="country">
+              {(field) => {
+                const isInvalid =
+                  field.state.meta.isDirty && !field.state.meta.isValid
+                return (
+                  <form.Field name="timezone">
+                    {(timezoneField) => (
+                      <LocaleFields
+                        country={field.state.value}
+                        timezone={timezoneField.state.value}
+                        onCountryChange={(country) => {
+                          field.handleChange(country)
+                          timezoneField.handleChange(getDefaultTimezone(country))
+                        }}
+                        onTimezoneChange={timezoneField.handleChange}
+                        countryInvalid={isInvalid}
+                        timezoneInvalid={
+                          timezoneField.state.meta.isDirty &&
+                          !timezoneField.state.meta.isValid
+                        }
+                        countryErrors={field.state.meta.errors}
+                        timezoneErrors={timezoneField.state.meta.errors}
+                        idPrefix={FORM_ID}
+                      />
+                    )}
+                  </form.Field>
                 )
               }}
             </form.Field>

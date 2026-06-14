@@ -1,6 +1,6 @@
 import { getToolName, type ToolUIPart } from "ai"
 
-/** Internal Corsair discovery tools — no UI noise. */
+/** Internal Corsair discovery tools, no UI noise. */
 const HIDDEN_TOOLS = new Set([
   "list_operations",
   "get_schema",

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 /**
- * Dev request timing — delete this file and remove `createRequestTimer` from
+ * Dev request timing, delete this file and remove `createRequestTimer` from
  * API routes to uninstall.
  *
  * Enabled when NODE_ENV=development and PULSE_TIMING is not "0".

@@ -58,7 +58,7 @@ export function ResetPasswordForm() {
         },
         {
           onSuccess: () => {
-            toast.success("Password updated — you can sign in now")
+            toast.success("Password updated. You can sign in now")
             router.push("/login")
           },
           onError: (ctx) => {

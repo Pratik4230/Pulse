@@ -18,6 +18,7 @@ import {
   PULSE_CHAT_MODEL,
 } from "@/features/pulse/server/ai"
 import { createPulseTools } from "@/features/pulse/server/tools"
+import { getUserLocale } from "@/features/user/server/get-user-locale"
 
 export const maxDuration = 60
 
@@ -53,11 +54,13 @@ export async function POST(req: Request) {
 
   try {
     const senderEmail = await resolveSenderEmail(tenantId, session.user.email)
+    const locale = await getUserLocale(tenantId)
 
     const pulseTools = createPulseTools({
       tenantId,
       senderEmail,
       integrations,
+      locale,
     })
 
     const mergedTools = hasConnectedIntegration
@@ -79,8 +82,8 @@ export async function POST(req: Request) {
         : undefined
 
     const system = mcpClient?.instructions
-      ? `${buildPulseSystemPrompt(integrations)}\n\n${mcpClient.instructions}`
-      : buildPulseSystemPrompt(integrations)
+      ? `${buildPulseSystemPrompt(integrations, locale)}\n\n${mcpClient.instructions}`
+      : buildPulseSystemPrompt(integrations, locale)
 
     const result = streamText({
       model: PULSE_CHAT_MODEL,

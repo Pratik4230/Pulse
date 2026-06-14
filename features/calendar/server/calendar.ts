@@ -81,7 +81,7 @@ export async function listUpcomingEvents(
   return { events, timeMin, timeMax }
 }
 
-function toEventDateTime(iso: string) {
+function toEventDateTime(iso: string, timeZone?: string) {
   const date = new Date(iso)
   if (Number.isNaN(date.getTime())) {
     throw new Error("Invalid date or time")
@@ -89,13 +89,14 @@ function toEventDateTime(iso: string) {
 
   return {
     dateTime: date.toISOString(),
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timeZone: timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
   }
 }
 
 export async function createCalendarEvent(
   tenantId: string,
   input: CreateCalendarEventInput,
+  options?: { timeZone?: string },
 ): Promise<CalendarEventItem> {
   const title = input.title.trim()
   if (!title) {
@@ -112,8 +113,8 @@ export async function createCalendarEvent(
       summary: title,
       description: input.description?.trim() || undefined,
       location: input.location?.trim() || undefined,
-      start: toEventDateTime(input.start),
-      end: toEventDateTime(input.end),
+      start: toEventDateTime(input.start, options?.timeZone),
+      end: toEventDateTime(input.end, options?.timeZone),
       attendees: attendees.length > 0 ? attendees : undefined,
     },
     sendUpdates: attendees.length > 0 ? "all" : "none",

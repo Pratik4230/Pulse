@@ -12,7 +12,7 @@ type SendEmailInput = {
 
 export async function sendEmail({ to, subject, text }: SendEmailInput) {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[email] RESEND_API_KEY not set — skipping send to", to)
+    console.warn("[email] RESEND_API_KEY not set, skipping send to", to)
     return
   }
 

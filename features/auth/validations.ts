@@ -1,5 +1,20 @@
 import * as z from "zod"
 
+import { COUNTRY_CODES, DEFAULT_COUNTRY } from "@/lib/currencies"
+import { getDefaultTimezone } from "@/lib/timezones"
+
+export const countrySchema = z.enum(
+  COUNTRY_CODES as [string, ...string[]],
+  { error: "Select your country" },
+)
+
+export const timezoneSchema = z.string().min(1, "Select a timezone")
+
+export const localeSchema = z.object({
+  country: countrySchema,
+  timezone: timezoneSchema,
+})
+
 export const emailSchema = z
   .email("Enter a valid email address")
   .max(255, "Email must be at most 255 characters")
@@ -29,11 +44,15 @@ export const signupSchema = z
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: z.string().min(1, "Confirm your password"),
+    country: countrySchema,
+    timezone: timezoneSchema,
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   })
+
+export const localeOnboardingSchema = localeSchema
 
 export const forgotPasswordSchema = z.object({
   email: emailSchema,
@@ -73,6 +92,7 @@ export const verifyOtpSchema = z.object({
 
 export type LoginValues = z.infer<typeof loginSchema>
 export type SignupValues = z.infer<typeof signupSchema>
+export type LocaleOnboardingValues = z.infer<typeof localeOnboardingSchema>
 export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>
 export type ChangePasswordValues = z.infer<typeof changePasswordSchema>

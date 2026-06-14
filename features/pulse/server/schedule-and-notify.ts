@@ -68,6 +68,7 @@ export async function scheduleAndNotify(
   tenantId: string,
   senderEmail: string,
   input: ScheduleAndNotifyInput,
+  options?: { timeZone?: string },
 ): Promise<ScheduleAndNotifyResult> {
   const attendeeEmail = input.attendeeEmail.trim()
   const title = input.title.trim()
@@ -104,14 +105,18 @@ export async function scheduleAndNotify(
   let calendarCreated = false
 
   if (!duplicate) {
-    await createCalendarEvent(tenantId, {
-      title,
-      start: input.start,
-      end: input.end,
-      attendees: [attendeeEmail],
-      location: input.location,
-      description: input.description,
-    })
+    await createCalendarEvent(
+      tenantId,
+      {
+        title,
+        start: input.start,
+        end: input.end,
+        attendees: [attendeeEmail],
+        location: input.location,
+        description: input.description,
+      },
+      { timeZone: options?.timeZone },
+    )
     calendarCreated = true
   }
 
