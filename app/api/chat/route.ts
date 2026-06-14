@@ -1,4 +1,5 @@
 import { createVercelAiMcpClient } from "@corsair-dev/mcp"
+import { openai } from "@ai-sdk/openai"
 import {
   convertToModelMessages,
   stepCountIs,
@@ -7,7 +8,6 @@ import {
 } from "ai"
 
 import { auth } from "@/lib/auth"
-import { gmailRawGetProfile } from "@/features/inbox/server/gmail-raw"
 import { getAppBaseUrl } from "@/features/integrations/core/lib/oauth"
 import {
   ensureCorsairTenant,
@@ -17,19 +17,9 @@ import {
   buildPulseSystemPrompt,
   PULSE_CHAT_MODEL,
 } from "@/features/pulse/server/ai"
-import { createPulseTools } from "@/features/pulse/server/tools"
 import { getUserLocale } from "@/features/user/server/get-user-locale"
 
 export const maxDuration = 60
-
-async function resolveSenderEmail(tenantId: string, fallbackEmail: string) {
-  try {
-    const profile = await gmailRawGetProfile(tenantId)
-    return profile.emailAddress?.trim() || fallbackEmail
-  } catch {
-    return fallbackEmail
-  }
-}
 
 export async function POST(req: Request) {
   const session = await auth.api.getSession({
@@ -53,14 +43,15 @@ export async function POST(req: Request) {
   let mcpClient: Awaited<ReturnType<typeof createVercelAiMcpClient>> | undefined
 
   try {
-    const senderEmail = await resolveSenderEmail(tenantId, session.user.email)
     const locale = await getUserLocale(tenantId)
 
-    const pulseTools = createPulseTools({
-      tenantId,
-      senderEmail,
-      integrations,
-      locale,
+    const webSearchTool = openai.tools.webSearch({
+      searchContextSize: "medium",
+      userLocation: {
+        type: "approximate",
+        country: locale.country,
+        timezone: locale.timezone,
+      },
     })
 
     const mergedTools = hasConnectedIntegration
@@ -72,9 +63,9 @@ export async function POST(req: Request) {
             },
           })
           const mcpTools = await mcpClient.tools()
-          return { ...pulseTools, ...mcpTools }
+          return { web_search: webSearchTool, ...mcpTools }
         })()
-      : pulseTools
+      : { web_search: webSearchTool }
 
     const tools =
       Object.keys(mergedTools).length > 0
@@ -90,7 +81,12 @@ export async function POST(req: Request) {
       system,
       messages: await convertToModelMessages(messages),
       tools,
-      stopWhen: stepCountIs(15),
+      stopWhen: stepCountIs(20),
+      providerOptions: {
+        openai: {
+          parallelToolCalls: false,
+        },
+      },
       onFinish: async () => {
         await mcpClient?.close()
       },

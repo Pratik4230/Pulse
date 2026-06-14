@@ -78,7 +78,7 @@ export function PulseChat({ onFirstMessage }: PulseChatProps) {
           {status === "submitted" && (
             <div className="flex gap-3 pr-4">
               <div className="size-8 shrink-0" />
-              <div className="shadow-elevated rounded-2xl border border-border/60 bg-card px-4 py-3">
+              <div className="shadow-elevated rounded-2xl border border-border/60 bg-card px-5 py-4 sm:px-6">
                 <Shimmer className="text-sm text-muted-foreground">
                   Thinking…
                 </Shimmer>

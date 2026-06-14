@@ -12,6 +12,17 @@ type PulseRichContentProps = {
   className?: string
 }
 
+const proseContentClasses = cn(
+  "prose prose-sm max-w-none dark:prose-invert",
+  "prose-p:my-2 prose-p:leading-relaxed prose-p:text-foreground/90",
+  "prose-strong:font-semibold prose-strong:text-foreground",
+  "prose-headings:mb-2 prose-headings:mt-3 prose-headings:text-foreground",
+  "prose-ul:my-2 prose-ul:ml-0 prose-ul:pl-5",
+  "prose-ol:my-2 prose-ol:ml-0 prose-ol:pl-5",
+  "prose-li:my-0.5 prose-li:pl-1 prose-li:text-foreground/90",
+  "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
+)
+
 function EmailCard({
   from,
   subject,
@@ -62,16 +73,7 @@ function MarkdownSection({
   if (!text.trim()) return null
 
   return (
-    <MessageResponse
-      className={cn(
-        "prose prose-sm max-w-none dark:prose-invert",
-        "prose-p:leading-relaxed prose-p:text-foreground/90",
-        "prose-strong:font-semibold prose-strong:text-foreground",
-        "prose-li:text-foreground/90",
-        "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
-        className,
-      )}
-    >
+    <MessageResponse className={cn(proseContentClasses, className)}>
       {text}
     </MessageResponse>
   )
@@ -82,16 +84,7 @@ export function PulseRichContent({ text, className }: PulseRichContentProps) {
 
   if (emails.length === 0) {
     return (
-      <MessageResponse
-        className={cn(
-          "prose prose-sm max-w-none dark:prose-invert",
-          "prose-p:leading-relaxed prose-p:text-foreground/90",
-          "prose-strong:font-semibold prose-strong:text-foreground",
-          "prose-li:text-foreground/90",
-          "prose-a:text-primary prose-a:no-underline hover:prose-a:underline",
-          className,
-        )}
-      >
+      <MessageResponse className={cn(proseContentClasses, className)}>
         {text}
       </MessageResponse>
     )

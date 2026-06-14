@@ -41,7 +41,7 @@ export function PulseAssistantMessage({ message }: PulseMessageProps) {
             {part.type === "text" ? (
               <div
                 className={cn(
-                  "shadow-elevated rounded-2xl rounded-tl-md border border-border/60 bg-card px-4 py-3.5",
+                  "shadow-elevated rounded-2xl rounded-tl-md border border-border/60 bg-card px-5 py-4 sm:px-6",
                 )}
               >
                 <PulseRichContent text={part.text} />
