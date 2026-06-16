@@ -32,14 +32,20 @@ import {
 import { Kbd } from "@/components/ui/kbd"
 import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
 import { emailOtp } from "@/lib/auth-client"
-import { verifyOtpSchema } from "@/features/auth/validations"
+import {
+  verifyEmailSearchSchema,
+  verifyOtpSchema,
+} from "@/features/auth/validations"
 
 const FORM_ID = "verify-email-form"
 
 export function VerifyEmailForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const email = searchParams.get("email") ?? ""
+  const parsedSearch = verifyEmailSearchSchema.safeParse({
+    email: searchParams.get("email") ?? undefined,
+  })
+  const email = parsedSearch.success ? (parsedSearch.data.email ?? "") : ""
   const [isResending, setIsResending] = useState(false)
 
   const form = useForm({

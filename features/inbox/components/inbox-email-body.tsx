@@ -97,19 +97,16 @@ const EMAIL_VIEWER_STYLES = `
   a { color: #57534e; overflow-wrap: anywhere; }
 `
 
-const EMAIL_CSP = `default-src 'none'; img-src https: data: cid:; style-src 'unsafe-inline' https:; font-src https: data:; frame-ancestors 'none';`
-
 function wrapEmailDocument(html: string) {
   const hasDocument = /<html[\s>]/i.test(html)
   const fontLink = `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />`
-  const csp = `<meta http-equiv="Content-Security-Policy" content="${EMAIL_CSP}" />`
   const styles = `<style>${EMAIL_VIEWER_STYLES}</style>`
 
   if (hasDocument) {
     let doc = html
 
     if (doc.includes("</head>")) {
-      doc = doc.replace("</head>", `${csp}${fontLink}${styles}</head>`)
+      doc = doc.replace("</head>", `${fontLink}${styles}</head>`)
     }
 
     if (/<body[\s>]/i.test(doc)) {
@@ -126,7 +123,6 @@ function wrapEmailDocument(html: string) {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    ${csp}
     ${fontLink}
     ${styles}
     <base target="_blank" rel="noopener noreferrer" />

@@ -1,14 +1,15 @@
 import * as z from "zod"
 
-import { COUNTRY_CODES, DEFAULT_COUNTRY } from "@/lib/currencies"
-import { getDefaultTimezone } from "@/lib/timezones"
+import { COUNTRY_CODES } from "@/lib/currencies"
 
-export const countrySchema = z.enum(
-  COUNTRY_CODES as [string, ...string[]],
-  { error: "Select your country" },
-)
+export const countrySchema = z.enum(COUNTRY_CODES as [string, ...string[]], {
+  error: "Select your country",
+})
 
-export const timezoneSchema = z.string().min(1, "Select a timezone")
+export const timezoneSchema = z
+  .string()
+  .min(1, "Select a timezone")
+  .max(100, "Timezone is too long")
 
 export const localeSchema = z.object({
   country: countrySchema,
@@ -35,7 +36,10 @@ export const nameSchema = z
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, "Password is required"),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .max(128, "Password must be at most 128 characters"),
 })
 
 export const signupSchema = z
@@ -43,7 +47,10 @@ export const signupSchema = z
     name: nameSchema,
     email: emailSchema,
     password: passwordSchema,
-    confirmPassword: z.string().min(1, "Confirm your password"),
+    confirmPassword: z
+      .string()
+      .min(1, "Confirm your password")
+      .max(128, "Password must be at most 128 characters"),
     country: countrySchema,
     timezone: timezoneSchema,
   })
@@ -61,7 +68,10 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z
   .object({
     password: passwordSchema,
-    confirmPassword: z.string().min(1, "Confirm your password"),
+    confirmPassword: z
+      .string()
+      .min(1, "Confirm your password")
+      .max(128, "Password must be at most 128 characters"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -70,9 +80,15 @@ export const resetPasswordSchema = z
 
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, "Current password is required"),
+    currentPassword: z
+      .string()
+      .min(1, "Current password is required")
+      .max(128, "Password must be at most 128 characters"),
     newPassword: passwordSchema,
-    confirmPassword: z.string().min(1, "Confirm your new password"),
+    confirmPassword: z
+      .string()
+      .min(1, "Confirm your new password")
+      .max(128, "Password must be at most 128 characters"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords do not match",
@@ -90,6 +106,15 @@ export const verifyOtpSchema = z.object({
     .regex(/^\d+$/, "Code must contain only numbers"),
 })
 
+export const verifyEmailSearchSchema = z.object({
+  email: emailSchema.optional(),
+})
+
+export const resetPasswordSearchSchema = z.object({
+  token: z.string().min(1).max(2048).optional(),
+  error: z.string().max(200).optional(),
+})
+
 export type LoginValues = z.infer<typeof loginSchema>
 export type SignupValues = z.infer<typeof signupSchema>
 export type LocaleOnboardingValues = z.infer<typeof localeOnboardingSchema>
@@ -97,3 +122,7 @@ export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>
 export type ChangePasswordValues = z.infer<typeof changePasswordSchema>
 export type VerifyOtpValues = z.infer<typeof verifyOtpSchema>
+export type VerifyEmailSearchValues = z.infer<typeof verifyEmailSearchSchema>
+export type ResetPasswordSearchValues = z.infer<
+  typeof resetPasswordSearchSchema
+>

@@ -14,7 +14,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Kbd } from "@/components/ui/kbd"
 import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
@@ -46,7 +51,7 @@ export function ForgotPasswordForm() {
           onError: (ctx) => {
             toast.error(ctx.error.message ?? "Could not send reset email")
           },
-        },
+        }
       )
     },
   })
@@ -89,7 +94,7 @@ export function ForgotPasswordForm() {
                       inputMode="email"
                       autoComplete="email"
                       autoFocus
-                      placeholder="you@example.com"
+                      placeholder="Enter your email"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(event) =>

@@ -26,15 +26,22 @@ import { Input } from "@/components/ui/input"
 import { Kbd } from "@/components/ui/kbd"
 import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
 import { resetPassword } from "@/lib/auth-client"
-import { resetPasswordSchema } from "@/features/auth/validations"
+import {
+  resetPasswordSchema,
+  resetPasswordSearchSchema,
+} from "@/features/auth/validations"
 
 const FORM_ID = "reset-password-form"
 
 export function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const token = searchParams.get("token")
-  const error = searchParams.get("error")
+  const parsedSearch = resetPasswordSearchSchema.safeParse({
+    token: searchParams.get("token") ?? undefined,
+    error: searchParams.get("error") ?? undefined,
+  })
+  const token = parsedSearch.success ? parsedSearch.data.token : undefined
+  const error = parsedSearch.success ? parsedSearch.data.error : "invalid-link"
 
   const form = useForm({
     defaultValues: {

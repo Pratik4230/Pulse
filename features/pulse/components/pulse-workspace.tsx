@@ -144,7 +144,6 @@ export function PulseWorkspace() {
           key={chatInstanceKey}
           chatInstanceKey={chatInstanceKey}
           sessionId={activeSessionId}
-          draftKey={draftKey}
           initialMessages={messagesPage?.messages ?? []}
           initialHasMore={messagesPage?.hasMore ?? false}
           initialOldestSequence={messagesPage?.oldestSequence ?? null}

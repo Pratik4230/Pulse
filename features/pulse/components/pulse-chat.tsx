@@ -19,11 +19,13 @@ import {
   PromptInputTextarea,
   type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input"
+import { SpeechInput } from "@/components/ai-elements/speech-input"
 import { Button } from "@/components/ui/button"
 import { Shimmer } from "@/components/ai-elements/shimmer"
 import { cn } from "@/lib/utils"
 
 import { fetchOlderChatMessages } from "@/features/pulse/hooks/use-chat-messages"
+import { CHAT_MAX_MESSAGE_CHARS } from "@/features/pulse/validations"
 import { PulseEmptyState } from "./pulse-empty-state"
 import { PulseMessage } from "./pulse-message"
 
@@ -35,11 +37,11 @@ const pulseChatTransport = new DefaultChatTransport({
     sessionId: pulseChatSessionId.value,
   }),
 })
+const CHAT_INPUT_ID = "pulse-chat-input"
 
 type PulseChatProps = {
   chatInstanceKey: string
   sessionId: string | null
-  draftKey: number
   initialMessages?: UIMessage[]
   initialHasMore?: boolean
   initialOldestSequence?: number | null
@@ -51,7 +53,6 @@ type PulseChatProps = {
 export function PulseChat({
   chatInstanceKey,
   sessionId,
-  draftKey,
   initialMessages = [],
   initialHasMore = false,
   initialOldestSequence = null,
@@ -67,7 +68,7 @@ export function PulseChat({
 
   const [hasOlder, setHasOlder] = useState(initialHasMore)
   const [oldestSequence, setOldestSequence] = useState<number | null>(
-    initialOldestSequence,
+    initialOldestSequence
   )
   const [loadingOlder, setLoadingOlder] = useState(false)
 
@@ -112,20 +113,14 @@ export function PulseChat({
 
       await sendMessage({ text: trimmed })
     },
-    [
-      ensureSessionId,
-      messages.length,
-      onSessionCreated,
-      sendMessage,
-      status,
-    ],
+    [ensureSessionId, messages.length, onSessionCreated, sendMessage, status]
   )
 
   const handleSuggestion = useCallback(
     (suggestion: string) => {
       void handleSubmit({ text: suggestion, files: [] })
     },
-    [handleSubmit],
+    [handleSubmit]
   )
 
   const handleLoadOlder = useCallback(async () => {
@@ -145,6 +140,47 @@ export function PulseChat({
     }
   }, [loadingOlder, oldestSequence, setMessages])
 
+  const handleTranscriptionChange = useCallback((transcript: string) => {
+    const input = document.getElementById(CHAT_INPUT_ID)
+    if (!(input instanceof HTMLTextAreaElement)) return
+
+    const current = input.value.trim()
+    const next = transcript.trim()
+    if (!next) return
+
+    input.value = current ? `${current} ${next}` : next
+    input.dispatchEvent(new Event("input", { bubbles: true }))
+    input.focus()
+  }, [])
+
+  useEffect(() => {
+    function handleKeyboardShortcuts(event: KeyboardEvent) {
+      const target = event.target
+      const isTypingInField =
+        target instanceof HTMLElement &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault()
+        const input = document.getElementById(CHAT_INPUT_ID)
+        if (input instanceof HTMLTextAreaElement) {
+          input.focus()
+        }
+        return
+      }
+
+      if (event.key === "Escape" && !isTypingInField && status !== "ready") {
+        event.preventDefault()
+        stop()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyboardShortcuts)
+    return () => window.removeEventListener("keydown", handleKeyboardShortcuts)
+  }, [status, stop])
+
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       <div
@@ -153,7 +189,7 @@ export function PulseChat({
       />
 
       <Conversation className="relative h-full min-h-0 flex-1">
-        <ConversationContent className="mx-auto w-full max-w-3xl gap-8 px-4 pb-6 pt-2 md:px-6">
+        <ConversationContent className="mx-auto w-full max-w-3xl gap-8 px-4 pt-2 pb-6 md:px-6">
           {hasOlder ? (
             <div className="flex justify-center">
               <Button
@@ -202,21 +238,33 @@ export function PulseChat({
           <PromptInput
             onSubmit={handleSubmit}
             className={cn(
-              "shadow-elevated-lg overflow-hidden rounded-2xl border border-border/80 bg-card",
-              "transition-shadow focus-within:border-warm-muted/50 focus-within:shadow-[0_0_0_3px_oklch(0.88_0.09_68/0.2)]",
+              "shadow-elevated-lg overflow-hidden rounded-3xl border border-border/80 bg-card",
+              "transition-shadow focus-within:border-warm-muted/50 focus-within:shadow-[0_0_0_3px_oklch(0.88_0.09_68/0.2)]"
             )}
           >
             <PromptInputBody>
               <PromptInputTextarea
-                className="min-h-12 resize-none bg-transparent px-4 py-3.5 text-[15px] placeholder:text-muted-foreground/70"
+                id={CHAT_INPUT_ID}
+                maxLength={CHAT_MAX_MESSAGE_CHARS}
+                className="min-h-16 flex-1 resize-none bg-transparent px-5 py-4 text-[18px] leading-relaxed placeholder:text-muted-foreground/70"
                 placeholder="Message Pulse…"
               />
             </PromptInputBody>
-            <PromptInputFooter className="border-t border-border/60 bg-muted/40 px-3 py-2">
-              <span className="text-xs text-muted-foreground">
-                Pulse can make mistakes. Verify important actions.
-              </span>
-              <PromptInputSubmit onStop={stop} status={status} />
+            <PromptInputFooter className="border-t border-border/60 bg-muted/20 px-3 py-2">
+              <SpeechInput
+                aria-label="Use microphone"
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground hover:text-foreground"
+                onTranscriptionChange={handleTranscriptionChange}
+              />
+              <div className="flex items-center gap-1">
+                <PromptInputSubmit
+                  onStop={stop}
+                  status={status}
+                  className="rounded-full"
+                />
+              </div>
             </PromptInputFooter>
           </PromptInput>
         </div>

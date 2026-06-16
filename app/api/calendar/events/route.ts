@@ -3,6 +3,10 @@ import {
   listUpcomingEvents,
 } from "@/features/calendar/server/calendar"
 import type { CreateCalendarEventInput } from "@/features/calendar/types"
+import {
+  calendarEventsQuerySchema,
+  createCalendarEventSchema,
+} from "@/features/calendar/validations"
 import { getSessionFromRequest } from "@/features/integrations/core/server/session"
 import {
   ensureCorsairTenant,
@@ -12,12 +16,6 @@ import { resolveUserLocale } from "@/lib/locale"
 import { createRequestTimer } from "@/lib/request-timer"
 
 export const runtime = "nodejs"
-
-function parseDays(value: string | null) {
-  const days = Number(value ?? 7)
-  if (!Number.isFinite(days) || days < 1 || days > 30) return 7
-  return Math.floor(days)
-}
 
 export async function GET(request: Request) {
   const timer = createRequestTimer("GET /api/calendar/events")
@@ -52,7 +50,13 @@ export async function GET(request: Request) {
     )
 
     const { searchParams } = new URL(request.url)
-    const days = parseDays(searchParams.get("days"))
+    const parsedQuery = calendarEventsQuerySchema.safeParse({
+      days: searchParams.get("days") ?? undefined,
+    })
+    if (!parsedQuery.success) {
+      return timer.json({ error: "Invalid calendar query" }, { status: 400 })
+    }
+    const days = parsedQuery.data.days ?? 7
 
     const result = await timer.time("list_upcoming_events", () =>
       listUpcomingEvents(tenantId, days),
@@ -108,7 +112,11 @@ export async function POST(request: Request) {
       ensureCorsairTenant(tenantId),
     )
 
-    const body = (await request.json()) as CreateCalendarEventInput
+    const parsedBody = createCalendarEventSchema.safeParse(await request.json())
+    if (!parsedBody.success) {
+      return timer.json({ error: "Invalid event payload" }, { status: 400 })
+    }
+    const body = parsedBody.data as CreateCalendarEventInput
     const locale = resolveUserLocale(session.user)
 
     const event = await timer.time("create_calendar_event", () =>

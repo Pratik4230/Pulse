@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation"
 import { useForm } from "@tanstack/react-form"
 import { toast } from "sonner"
 
+import { FormShortcuts } from "@/features/auth/components/form-shortcuts"
 import { LocaleFields } from "@/features/auth/components/locale-fields"
+import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
 import { localeOnboardingSchema } from "@/features/auth/validations"
 import { Button } from "@/components/ui/button"
 import {
@@ -66,6 +68,11 @@ export function LocaleOnboardingForm() {
     },
   })
 
+  useFormKeyboard({
+    formId: FORM_ID,
+    onEscape: () => form.reset(),
+  })
+
   return (
     <Card className="w-full sm:max-w-md">
       <CardHeader>
@@ -116,7 +123,7 @@ export function LocaleOnboardingForm() {
           </FieldGroup>
         </form>
       </CardContent>
-      <CardFooter className="border-t">
+      <CardFooter className="flex flex-col gap-4 border-t">
         <Button
           type="submit"
           form={FORM_ID}
@@ -128,6 +135,7 @@ export function LocaleOnboardingForm() {
             ⏎
           </Kbd>
         </Button>
+        <FormShortcuts />
       </CardFooter>
     </Card>
   )

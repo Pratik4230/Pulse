@@ -128,7 +128,7 @@ function LoginFormContent() {
                       inputMode="email"
                       autoComplete="email"
                       autoFocus
-                      placeholder="you@example.com"
+                      placeholder="Enter your email"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(event) =>

@@ -5,21 +5,29 @@ import { emailOTP } from "better-auth/plugins"
 
 import { db } from "@/db"
 import * as authSchema from "@/db/schema/auth"
+import { localeSchema } from "@/features/auth/validations"
 import { COUNTRY_CODES, getCurrencyByCountry } from "@/lib/currencies"
 import { sendEmail, sendOtpEmail } from "@/lib/email"
 import { getDefaultTimezone, getTimezoneOptions } from "@/lib/timezones"
 
 function normalizeLocaleFields<T extends Record<string, unknown>>(record: T) {
-  const country =
-    typeof record.country === "string" ? record.country.trim().toUpperCase() : ""
+  const parsedLocale = localeSchema.safeParse({
+    country:
+      typeof record.country === "string" ? record.country.trim().toUpperCase() : "",
+    timezone: typeof record.timezone === "string" ? record.timezone.trim() : "",
+  })
 
-  if (!country || !COUNTRY_CODES.includes(country)) {
+  if (!parsedLocale.success) {
+    return record
+  }
+
+  const { country, timezone: timezoneInput } = parsedLocale.data
+
+  if (!COUNTRY_CODES.includes(country)) {
     return record
   }
 
   const currency = getCurrencyByCountry(country).code
-  const timezoneInput =
-    typeof record.timezone === "string" ? record.timezone.trim() : ""
   const allowedTimezones = new Set(
     getTimezoneOptions(country).map((option) => option.value),
   )

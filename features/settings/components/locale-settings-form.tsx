@@ -7,7 +7,9 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FieldGroup } from "@/components/ui/field"
+import { FormShortcuts } from "@/features/auth/components/form-shortcuts"
 import { LocaleFields } from "@/features/auth/components/locale-fields"
+import { useFormKeyboard } from "@/features/auth/hooks/use-form-keyboard"
 import { localeOnboardingSchema } from "@/features/auth/validations"
 import { updateUser } from "@/lib/auth-client"
 import { getCurrencyByCountry } from "@/lib/currencies"
@@ -17,6 +19,8 @@ type LocaleSettingsFormProps = {
   country: string
   timezone: string
 }
+
+const FORM_ID = "settings-locale-form"
 
 export function LocaleSettingsForm({
   country,
@@ -53,6 +57,11 @@ export function LocaleSettingsForm({
   const selectedCountry = form.state.values.country
   const currentCurrency = getCurrencyByCountry(selectedCountry).code
 
+  useFormKeyboard({
+    formId: FORM_ID,
+    onEscape: () => form.reset(),
+  })
+
   return (
     <Card>
       <CardHeader>
@@ -63,6 +72,7 @@ export function LocaleSettingsForm({
           Currency is derived from country. Current currency: {currentCurrency}.
         </p>
         <form
+          id={FORM_ID}
           noValidate
           onSubmit={(event) => {
             event.preventDefault()
@@ -100,10 +110,11 @@ export function LocaleSettingsForm({
               )}
             </form.Field>
           </FieldGroup>
-          <Button type="submit" disabled={form.state.isSubmitting}>
+          <Button type="submit" form={FORM_ID} disabled={form.state.isSubmitting}>
             Save changes
           </Button>
         </form>
+        <FormShortcuts />
       </CardContent>
     </Card>
   )

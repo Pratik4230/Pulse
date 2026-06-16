@@ -23,6 +23,10 @@ import {
   saveChatMessages,
 } from "@/features/pulse/server/chat-store"
 import { getLatestUserMessageText } from "@/features/pulse/server/chat-messages"
+import {
+  CHAT_MAX_MESSAGE_CHARS,
+  chatPostBodySchema,
+} from "@/features/pulse/validations"
 import { getUserLocale } from "@/features/user/server/get-user-locale"
 
 export const maxDuration = 60
@@ -37,20 +41,25 @@ export async function POST(req: Request) {
   }
 
   const tenantId = session.user.id
-  const {
-    messages,
-    sessionId,
-  }: { messages: UIMessage[]; sessionId?: string } = await req.json()
-
-  if (!sessionId?.trim()) {
-    return Response.json({ error: "sessionId is required" }, { status: 400 })
+  const parsedBody = chatPostBodySchema.safeParse(await req.json())
+  if (!parsedBody.success) {
+    return Response.json({ error: "Invalid chat request" }, { status: 400 })
   }
-
-  if (!Array.isArray(messages) || messages.length === 0) {
-    return Response.json({ error: "messages are required" }, { status: 400 })
+  const { messages, sessionId } = parsedBody.data as {
+    messages: UIMessage[]
+    sessionId: string
   }
 
   const latestUserText = getLatestUserMessageText(messages)
+  if (latestUserText && latestUserText.length > CHAT_MAX_MESSAGE_CHARS) {
+    return Response.json(
+      {
+        error: `Message is too long. Maximum ${CHAT_MAX_MESSAGE_CHARS} characters.`,
+      },
+      { status: 400 },
+    )
+  }
+
   const titleCandidate = latestUserText?.slice(0, 48)
 
   await ensureChatSession(tenantId, sessionId, titleCandidate)

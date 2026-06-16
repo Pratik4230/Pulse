@@ -64,14 +64,14 @@ export function SignupForm() {
           onSuccess: () => {
             toast.success("Check your email for a verification code")
             router.push(
-              `/verify-email?email=${encodeURIComponent(value.email)}`,
+              `/verify-email?email=${encodeURIComponent(value.email)}`
             )
             router.refresh()
           },
           onError: (ctx) => {
             toast.error(ctx.error.message ?? "Could not create account")
           },
-        },
+        }
       )
     },
   })
@@ -144,7 +144,7 @@ export function SignupForm() {
                       type="email"
                       inputMode="email"
                       autoComplete="email"
-                      placeholder="you@example.com"
+                      placeholder="Enter your email"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(event) =>
@@ -171,7 +171,9 @@ export function SignupForm() {
                         timezone={timezoneField.state.value}
                         onCountryChange={(country) => {
                           field.handleChange(country)
-                          timezoneField.handleChange(getDefaultTimezone(country))
+                          timezoneField.handleChange(
+                            getDefaultTimezone(country)
+                          )
                         }}
                         onTimezoneChange={timezoneField.handleChange}
                         countryInvalid={isInvalid}
