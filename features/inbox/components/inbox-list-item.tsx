@@ -33,6 +33,7 @@ export function InboxListItemRow({
     <button
       type="button"
       onClick={() => onSelect(item.id)}
+      data-inbox-id={item.id}
       className={cn(
         "relative w-full min-w-0 overflow-hidden border-b border-border/60 px-4 py-3.5 pr-3 text-left transition-colors",
         "hover:bg-accent/40",

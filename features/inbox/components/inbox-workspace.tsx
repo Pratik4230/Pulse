@@ -1,7 +1,7 @@
 "use client"
 
 import { ArrowLeft } from "lucide-react"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { useIntegrationsStatus } from "@/features/integrations/core/hooks/use-integrations-status"
@@ -64,6 +64,55 @@ export function InboxWorkspace() {
       void fetchNextPage()
     }
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  useEffect(() => {
+    function handleKeyboardNavigation(event: KeyboardEvent) {
+      const target = event.target
+      const isTypingInField =
+        target instanceof HTMLElement &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+
+      if (isTypingInField) return
+
+      const items = messages ?? []
+      if (event.key === "r" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault()
+        handleRefresh()
+        return
+      }
+
+      if (!items.length) return
+
+      const currentId = displaySelectedId ?? items[0]?.id ?? null
+      const currentIndex = Math.max(
+        0,
+        items.findIndex((message) => message.id === currentId),
+      )
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault()
+        const nextIndex = Math.min(items.length - 1, currentIndex + 1)
+        setSelectedId(items[nextIndex]?.id ?? null)
+        return
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault()
+        const nextIndex = Math.max(0, currentIndex - 1)
+        setSelectedId(items[nextIndex]?.id ?? null)
+        return
+      }
+
+      if (event.key === "Escape") {
+        setSelectedId(null)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyboardNavigation)
+    return () => window.removeEventListener("keydown", handleKeyboardNavigation)
+  }, [displaySelectedId, handleRefresh, messages])
 
   if (isStatusLoading && !messages?.length && isListLoading) {
     return (

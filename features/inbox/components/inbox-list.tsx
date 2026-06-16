@@ -59,6 +59,7 @@ export function InboxList({
   onLoadMore,
 }: InboxListProps) {
   const loadMoreRef = useRef<HTMLDivElement>(null)
+  const listRootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const node = loadMoreRef.current
@@ -70,12 +71,21 @@ export function InboxList({
           onLoadMore()
         }
       },
-      { rootMargin: "120px" },
+      { rootMargin: "120px" }
     )
 
     observer.observe(node)
     return () => observer.disconnect()
   }, [hasNextPage, isFetchingNextPage, onLoadMore])
+
+  useEffect(() => {
+    if (!selectedId || !listRootRef.current) return
+
+    const selectedRow = listRootRef.current.querySelector<HTMLButtonElement>(
+      `[data-inbox-id="${selectedId}"]`
+    )
+    selectedRow?.scrollIntoView({ block: "nearest" })
+  }, [selectedId])
 
   if (isLoading) {
     return <InboxListSkeleton />
@@ -107,8 +117,8 @@ export function InboxList({
   }
 
   return (
-    <ScrollArea className="h-full [&_[data-slot=scroll-area-viewport]>div]:!block [&_[data-slot=scroll-area-viewport]>div]:!w-full [&_[data-slot=scroll-area-viewport]>div]:!min-w-0">
-      <div className="w-full min-w-0">
+    <ScrollArea className="h-full [&_[data-slot=scroll-area-viewport]>div]:block! [&_[data-slot=scroll-area-viewport]>div]:w-full! [&_[data-slot=scroll-area-viewport]>div]:min-w-0!">
+      <div ref={listRootRef} className="w-full min-w-0">
         {messages.map((item) => (
           <InboxListItemRow
             key={item.id}
@@ -122,7 +132,9 @@ export function InboxList({
           {isFetchingNextPage ? (
             <Spinner className="size-5 text-muted-foreground" />
           ) : hasNextPage ? (
-            <span className="text-xs text-muted-foreground">Scroll for more</span>
+            <span className="text-xs text-muted-foreground">
+              Scroll for more
+            </span>
           ) : messages.length > 0 ? (
             <span className="text-xs text-muted-foreground">End of inbox</span>
           ) : null}

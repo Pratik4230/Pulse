@@ -3,6 +3,7 @@
 import { RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Kbd, KbdGroup } from "@/components/ui/kbd"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 
@@ -45,6 +46,11 @@ export function InboxToolbar({
       </div>
 
       <div className="flex items-center gap-2">
+        <KbdGroup className="hidden text-[11px] text-muted-foreground md:inline-flex">
+          <Kbd>↑</Kbd>
+          <Kbd>↓</Kbd>
+          <Kbd>R</Kbd>
+        </KbdGroup>
         {messageCount !== undefined ? (
           <span className="text-xs text-muted-foreground">
             {messageCount} message{messageCount === 1 ? "" : "s"}
