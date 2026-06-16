@@ -125,6 +125,10 @@ export function PulseWorkspace() {
 
   const showMessagesLoading = shouldLoadMessages && isLoadingMessages
 
+  const handleFocusComposer = useCallback(() => {
+    window.dispatchEvent(new Event("pulse:focus-composer"))
+  }, [])
+
   return (
     <AppShell
       title={activeTitle}
@@ -132,6 +136,7 @@ export function PulseWorkspace() {
       activeSessionId={activeSessionId ?? undefined}
       isStreaming={isStreaming}
       onNewChat={handleNewChat}
+      onFocusComposer={handleFocusComposer}
       onSelectSession={handleSelectSession}
       onDeleteSession={handleDeleteSession}
     >

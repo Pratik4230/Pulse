@@ -13,6 +13,7 @@ import {
   Trash2,
 } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { PulseLogo } from "@/components/brand/pulse-logo"
@@ -37,6 +38,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { Kbd, KbdGroup } from "@/components/ui/kbd"
 import { signOut, useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import { useDeleteChatSession } from "@/features/pulse/hooks/use-chat-sessions"
@@ -78,6 +80,11 @@ export function PulseSidebar({
   const pathname = usePathname()
   const { data: session } = useSession()
   const deleteChatSession = useDeleteChatSession()
+  const [isMac, setIsMac] = useState(false)
+
+  useEffect(() => {
+    setIsMac(window.navigator.platform.toLowerCase().includes("mac"))
+  }, [])
 
   async function handleDeleteChat(sessionId: string) {
     if (isStreaming) {
@@ -247,6 +254,20 @@ export function PulseSidebar({
 
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem className="group-data-[collapsible=icon]:hidden">
+            <div className="rounded-md border border-sidebar-border/80 bg-sidebar-accent/30 px-3 py-2 text-xs text-sidebar-foreground/80">
+              <div className="mb-1 text-[11px] uppercase tracking-wide text-sidebar-foreground/60">
+                Tip
+              </div>
+              <div className="flex items-center gap-2">
+                <span>Open command palette</span>
+                <KbdGroup>
+                  <Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
+                  <Kbd>K</Kbd>
+                </KbdGroup>
+              </div>
+            </div>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

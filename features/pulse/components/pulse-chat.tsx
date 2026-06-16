@@ -154,6 +154,23 @@ export function PulseChat({
   }, [])
 
   useEffect(() => {
+    function handleFocusComposer() {
+      window.requestAnimationFrame(() => {
+        const input = document.getElementById(CHAT_INPUT_ID)
+        if (!(input instanceof HTMLTextAreaElement)) return
+
+        input.focus()
+        const length = input.value.length
+        input.setSelectionRange(length, length)
+      })
+    }
+
+    window.addEventListener("pulse:focus-composer", handleFocusComposer)
+    return () =>
+      window.removeEventListener("pulse:focus-composer", handleFocusComposer)
+  }, [])
+
+  useEffect(() => {
     function handleKeyboardShortcuts(event: KeyboardEvent) {
       const target = event.target
       const isTypingInField =
@@ -161,15 +178,6 @@ export function PulseChat({
         (target.tagName === "INPUT" ||
           target.tagName === "TEXTAREA" ||
           target.isContentEditable)
-
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault()
-        const input = document.getElementById(CHAT_INPUT_ID)
-        if (input instanceof HTMLTextAreaElement) {
-          input.focus()
-        }
-        return
-      }
 
       if (event.key === "Escape" && !isTypingInField && status !== "ready") {
         event.preventDefault()
