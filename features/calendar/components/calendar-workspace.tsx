@@ -16,12 +16,7 @@ import { cn } from "@/lib/utils"
 import { useCalendarEvents } from "../hooks/use-calendar-events"
 import { CalendarConnectPrompt } from "./calendar-connect-prompt"
 import { CalendarCreateDialog } from "./calendar-create-dialog"
-import {
-  CalendarEventDetail,
-  CalendarEventList,
-} from "./calendar-event-list"
-
-const DAYS_AHEAD = 7
+import { CalendarEventDetail, CalendarEventList } from "./calendar-event-list"
 
 export function CalendarWorkspace() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -38,8 +33,11 @@ export function CalendarWorkspace() {
     isLoading,
     isError,
     isFetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
     refetch,
-  } = useCalendarEvents(DAYS_AHEAD, calendarConnected)
+  } = useCalendarEvents(undefined, calendarConnected)
 
   const events = data?.events
 
@@ -86,7 +84,7 @@ export function CalendarWorkspace() {
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Calendar
           </h2>
-          <p className="text-sm text-foreground">Next {DAYS_AHEAD} days</p>
+          <p className="text-sm text-foreground">All upcoming events</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -120,6 +118,9 @@ export function CalendarWorkspace() {
             isError={isError}
             selectedId={displaySelectedId}
             onSelect={handleSelectEvent}
+            hasNextPage={Boolean(hasNextPage)}
+            isFetchingNextPage={isFetchingNextPage}
+            onLoadMore={() => void fetchNextPage()}
           />
         </div>
         <div className="hidden min-h-0 lg:flex">

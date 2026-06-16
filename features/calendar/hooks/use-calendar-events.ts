@@ -1,13 +1,32 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query"
 
 import type {
   CalendarEventsResponse,
   CreateCalendarEventInput,
 } from "../types"
 
-async function fetchCalendarEvents(days = 7) {
-  const params = new URLSearchParams({ days: String(days) })
-  const response = await fetch(`/api/calendar/events?${params}`)
+async function fetchCalendarEvents({
+  days,
+  pageToken,
+}: {
+  days?: number | null
+  pageToken?: string
+}) {
+  const params = new URLSearchParams()
+  if (typeof days === "number") {
+    params.set("days", String(days))
+  }
+  if (pageToken) {
+    params.set("pageToken", pageToken)
+  }
+  const query = params.toString()
+  const response = await fetch(
+    query ? `/api/calendar/events?${query}` : "/api/calendar/events",
+  )
 
   if (!response.ok) {
     const data = (await response.json().catch(() => null)) as {
@@ -39,35 +58,39 @@ async function createCalendarEvent(input: CreateCalendarEventInput) {
   return response.json() as Promise<{ event: CalendarEventsResponse["events"][number] }>
 }
 
-export function calendarEventsQueryKey(days = 7) {
-  return ["calendar", "events", days] as const
+export function calendarEventsQueryKey(days?: number | null) {
+  return ["calendar", "events", days ?? "all"] as const
 }
 
-export function useCalendarEvents(days = 7, enabled = true) {
-  return useQuery({
+export function useCalendarEvents(days?: number | null, enabled = true) {
+  return useInfiniteQuery({
     queryKey: calendarEventsQueryKey(days),
-    queryFn: () => fetchCalendarEvents(days),
+    queryFn: ({ pageParam }) =>
+      fetchCalendarEvents({ days, pageToken: pageParam as string | undefined }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextPageToken ?? undefined,
     enabled,
     staleTime: 60_000,
+    select: (data) => {
+      const events = data.pages.flatMap((page) => page.events)
+      const uniqueEvents = Array.from(new Map(events.map((event) => [event.id, event])).values())
+      return {
+        ...data,
+        events: uniqueEvents.sort((a, b) => a.start.localeCompare(b.start)),
+      }
+    },
   })
 }
 
-export function useCreateCalendarEvent(days = 7) {
+export function useCreateCalendarEvent(days?: number | null) {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: createCalendarEvent,
-    onSuccess: ({ event }) => {
-      queryClient.setQueryData<CalendarEventsResponse>(
-        calendarEventsQueryKey(days),
-        (current) => {
-          if (!current) return current
-          const events = [...current.events, event].sort((a, b) =>
-            a.start.localeCompare(b.start),
-          )
-          return { ...current, events }
-        },
-      )
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: calendarEventsQueryKey(days),
+      })
     },
   })
 }

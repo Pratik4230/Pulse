@@ -16,6 +16,9 @@ type CalendarEventListProps = {
   isError: boolean
   selectedId: string | null
   onSelect: (id: string) => void
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
+  onLoadMore?: () => void
 }
 
 function parseEventDate(value: string, isAllDay: boolean) {
@@ -104,6 +107,9 @@ export function CalendarEventList({
   isError,
   selectedId,
   onSelect,
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMore,
 }: CalendarEventListProps) {
   if (isLoading && !events?.length) {
     return <CalendarEventListSkeleton />
@@ -123,8 +129,7 @@ export function CalendarEventList({
         <Calendar className="size-8 text-muted-foreground/60" />
         <p className="text-sm font-medium">No upcoming events</p>
         <p className="max-w-xs text-sm text-muted-foreground">
-          Your calendar is clear for the next 7 days. Create an event to get
-          started.
+          Your calendar has no upcoming events. Create an event to get started.
         </p>
       </div>
     )
@@ -179,6 +184,23 @@ export function CalendarEventList({
             </div>
           </section>
         ))}
+        <div className="flex justify-center pt-2">
+          {hasNextPage ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isFetchingNextPage}
+              onClick={onLoadMore}
+            >
+              {isFetchingNextPage ? "Loading more…" : "Load more events"}
+            </Button>
+          ) : (
+            <span className="text-xs text-muted-foreground">
+              End of upcoming events
+            </span>
+          )}
+        </div>
       </div>
     </ScrollArea>
   )

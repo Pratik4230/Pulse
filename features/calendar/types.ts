@@ -19,7 +19,8 @@ export type CalendarEventItem = {
 export type CalendarEventsResponse = {
   events: CalendarEventItem[]
   timeMin: string
-  timeMax: string
+  timeMax: string | null
+  nextPageToken: string | null
 }
 
 export type CreateCalendarEventInput = {

@@ -9,8 +9,7 @@ import {
   type CalendarRawEvent,
 } from "./calendar-raw"
 
-const DEFAULT_DAYS = 7
-const MAX_EVENTS = 100
+const MAX_EVENTS_PER_PAGE = 50
 
 function parseEventTime(time?: { date?: string; dateTime?: string }) {
   if (!time) return { iso: "", isAllDay: false }
@@ -20,7 +19,9 @@ function parseEventTime(time?: { date?: string; dateTime?: string }) {
   return { iso: time.dateTime ?? "", isAllDay: false }
 }
 
-function toCalendarEventItem(event: CalendarRawEvent): CalendarEventItem | null {
+function toCalendarEventItem(
+  event: CalendarRawEvent
+): CalendarEventItem | null {
   if (!event.id || event.status === "cancelled") return null
 
   const start = parseEventTime(event.start)
@@ -46,9 +47,16 @@ function toCalendarEventItem(event: CalendarRawEvent): CalendarEventItem | null 
   }
 }
 
-function getRange(days: number) {
+function getRange(days?: number | null) {
   const timeMin = new Date()
   timeMin.setHours(0, 0, 0, 0)
+
+  if (days == null) {
+    return {
+      timeMin: timeMin.toISOString(),
+      timeMax: null,
+    }
+  }
 
   const timeMax = new Date(timeMin)
   timeMax.setDate(timeMax.getDate() + days)
@@ -61,14 +69,18 @@ function getRange(days: number) {
 
 export async function listUpcomingEvents(
   tenantId: string,
-  days = DEFAULT_DAYS,
+  days: number | null = null,
+  pageToken?: string
 ): Promise<CalendarEventsResponse> {
-  const { timeMin, timeMax } = getRange(days)
-
+  const normalizedDays =
+    typeof days === "number" && Number.isFinite(days) ? days : null
+  const effectiveDays = normalizedDays ?? null
+  const { timeMin, timeMax } = getRange(effectiveDays)
   const response = await calendarRawListEvents(tenantId, {
     timeMin,
-    timeMax,
-    maxResults: MAX_EVENTS,
+    timeMax: effectiveDays == null ? undefined : (timeMax ?? undefined),
+    maxResults: MAX_EVENTS_PER_PAGE,
+    pageToken,
     singleEvents: true,
     orderBy: "startTime",
   })
@@ -78,7 +90,12 @@ export async function listUpcomingEvents(
       ?.map(toCalendarEventItem)
       .filter((event): event is CalendarEventItem => event != null) ?? []
 
-  return { events, timeMin, timeMax }
+  return {
+    events,
+    timeMin,
+    timeMax,
+    nextPageToken: response.nextPageToken ?? null,
+  }
 }
 
 function toEventDateTime(iso: string, timeZone?: string) {
@@ -96,7 +113,7 @@ function toEventDateTime(iso: string, timeZone?: string) {
 export async function createCalendarEvent(
   tenantId: string,
   input: CreateCalendarEventInput,
-  options?: { timeZone?: string },
+  options?: { timeZone?: string }
 ): Promise<CalendarEventItem> {
   const title = input.title.trim()
   if (!title) {
