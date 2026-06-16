@@ -8,6 +8,7 @@ import {
   MessageSquare,
   MessageSquarePlus,
   Plug,
+  Settings,
   Sparkles,
   Trash2,
 } from "lucide-react"
@@ -230,12 +231,12 @@ export function PulseSidebar({
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith("/settings/integrations")}
-                  tooltip="Integrations"
+                  isActive={pathname.startsWith("/settings")}
+                  tooltip="Settings"
                 >
-                  <Link href="/settings/integrations">
-                    <Plug />
-                    <span>Integrations</span>
+                  <Link href="/settings">
+                    <Settings />
+                    <span>Settings</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -275,9 +276,9 @@ export function PulseSidebar({
                 sideOffset={4}
               >
                 <DropdownMenuItem asChild>
-                  <Link href="/settings/integrations">
-                    <Plug className={cn("size-4")} />
-                    Integrations
+                  <Link href="/settings">
+                    <Settings className={cn("size-4")} />
+                    Settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
