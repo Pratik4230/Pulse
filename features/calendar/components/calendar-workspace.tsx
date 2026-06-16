@@ -4,6 +4,12 @@ import { Plus, RefreshCw } from "lucide-react"
 import { useCallback, useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import { useIntegrationsStatus } from "@/features/integrations/core/hooks/use-integrations-status"
 import { cn } from "@/lib/utils"
 
@@ -19,6 +25,7 @@ const DAYS_AHEAD = 7
 
 export function CalendarWorkspace() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false)
   const [createOpen, setCreateOpen] = useState(false)
 
   const { data: statusData, isLoading: isStatusLoading } =
@@ -52,6 +59,13 @@ export function CalendarWorkspace() {
   const handleRefresh = useCallback(() => {
     void refetch()
   }, [refetch])
+
+  const handleSelectEvent = useCallback((eventId: string) => {
+    setSelectedId(eventId)
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setMobileDetailOpen(true)
+    }
+  }, [])
 
   if (isStatusLoading && !events?.length && isLoading) {
     return (
@@ -105,13 +119,30 @@ export function CalendarWorkspace() {
             isLoading={isLoading}
             isError={isError}
             selectedId={displaySelectedId}
-            onSelect={setSelectedId}
+            onSelect={handleSelectEvent}
           />
         </div>
         <div className="hidden min-h-0 lg:flex">
           <CalendarEventDetail event={selectedEvent} />
         </div>
       </div>
+
+      <Sheet
+        open={mobileDetailOpen && Boolean(selectedEvent)}
+        onOpenChange={setMobileDetailOpen}
+      >
+        <SheetContent
+          side="bottom"
+          className="h-[85vh] rounded-t-2xl p-0 lg:hidden"
+        >
+          <SheetTitle className="sr-only">Calendar event details</SheetTitle>
+          <SheetDescription className="sr-only">
+            View selected event information including time, location, attendees,
+            and description.
+          </SheetDescription>
+          <CalendarEventDetail event={selectedEvent} />
+        </SheetContent>
+      </Sheet>
 
       <CalendarCreateDialog open={createOpen} onOpenChange={setCreateOpen} />
     </div>
