@@ -8,6 +8,11 @@ import { buildLocaleContext, type UserLocale } from "@/lib/locale"
 
 export const PULSE_CHAT_MODEL = openai("gpt-5.4-mini")
 
+type SenderProfile = {
+  name: string | null
+  email: string | null
+}
+
 const INTEGRATION_LABELS: Record<IntegrationId, string> = {
   gmail: "Gmail",
   googlecalendar: "Google Calendar",
@@ -17,6 +22,7 @@ const PULSE_IDENTITY = `
 You are Pulse, a keyboard-first AI command center for email and calendar.
 
 Communication:
+- Be polite, respectful, friendly.
 - Be concise, actionable, and accurate.
 - Use short paragraphs and bullet lists when helpful.
 - Prefer action over explanation.
@@ -172,6 +178,20 @@ Timezone rules:
 `
 }
 
+function buildSenderPolicy(sender: SenderProfile) {
+  const senderName = sender.name?.trim()
+  const senderEmail = sender.email?.trim()
+  const signOffName = senderName || "the logged-in user"
+
+  return `
+Sender identity for drafts and sent emails:
+- Logged-in user's name: ${senderName || "(not available)"}.
+- Logged-in user's email: ${senderEmail || "(not available)"}.
+- Never use placeholders like [Your Name], [Name], or <Your Name>.
+- When drafting or sending emails that include a sign-off, use "${signOffName}" as the name.
+`
+}
+
 function buildDisconnectedPrompt() {
   return `
 ${PULSE_IDENTITY}
@@ -189,6 +209,7 @@ If the user requests email or calendar actions:
 export function buildPulseSystemPrompt(
   integrations: Record<IntegrationId, IntegrationStatus>,
   locale: UserLocale,
+  sender: SenderProfile
 ) {
   const connectedIds = (
     Object.keys(INTEGRATION_LABELS) as IntegrationId[]
@@ -203,6 +224,7 @@ export function buildPulseSystemPrompt(
     `Connected Integrations: ${connectedIds
       .map((id) => INTEGRATION_LABELS[id])
       .join(", ")}.`,
+    buildSenderPolicy(sender),
     buildLocalePolicy(locale),
     TOOL_WORKFLOW,
     MULTI_REQUEST_POLICY,

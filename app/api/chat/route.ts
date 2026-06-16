@@ -99,8 +99,14 @@ export async function POST(req: Request) {
         : undefined
 
     const systemBase = mcpClient?.instructions
-      ? `${buildPulseSystemPrompt(integrations, locale)}\n\n${mcpClient.instructions}`
-      : buildPulseSystemPrompt(integrations, locale)
+      ? `${buildPulseSystemPrompt(integrations, locale, {
+          name: session.user.name ?? null,
+          email: session.user.email ?? null,
+        })}\n\n${mcpClient.instructions}`
+      : buildPulseSystemPrompt(integrations, locale, {
+          name: session.user.name ?? null,
+          email: session.user.email ?? null,
+        })
 
     const system = systemBase
 
