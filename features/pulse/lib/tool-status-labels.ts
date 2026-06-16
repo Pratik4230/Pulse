@@ -1,4 +1,4 @@
-import { getToolName, type ToolUIPart } from "ai"
+import { getToolName, isToolUIPart, type ToolUIPart, type UIMessage } from "ai"
 
 /** Internal Corsair discovery tools, no UI noise. */
 const HIDDEN_TOOLS = new Set([
@@ -8,52 +8,90 @@ const HIDDEN_TOOLS = new Set([
 ])
 
 const TOOL_STATUS_LABELS: Record<string, string> = {
-  run_script: "Working on your request",
   gmail_send_plain: "Sending email",
-  web_search: "Searching the web",
+  web_search: "Researching",
 }
 
-const COMPLETED_TOOL_LABELS: Record<string, string> = {
-  gmail_send_plain: "Email sent",
-  web_search: "Research complete",
-}
-
-const VISIBLE_COMPLETED_TOOLS = new Set(Object.keys(COMPLETED_TOOL_LABELS))
-
-export function getToolStatusLabel(toolName: string, state?: ToolUIPart["state"]) {
-  if (state === "output-available" && COMPLETED_TOOL_LABELS[toolName]) {
-    return COMPLETED_TOOL_LABELS[toolName]
-  }
-
-  return TOOL_STATUS_LABELS[toolName] ?? "Working on your request"
-}
-
-export function getToolStatusLabelFromPart(
-  part: Parameters<typeof getToolName>[0] & { state?: ToolUIPart["state"] },
-) {
-  return getToolStatusLabel(getToolName(part), part.state)
-}
-
-const HIDDEN_TOOL_STATES: ToolUIPart["state"][] = [
+const FINISHED_TOOL_STATES: ToolUIPart["state"][] = [
   "output-available",
   "output-denied",
   "approval-responded",
 ]
 
-export function shouldShowToolActivity(
-  toolName: string,
-  state: ToolUIPart["state"],
-) {
-  if (HIDDEN_TOOLS.has(toolName)) return false
-  if (VISIBLE_COMPLETED_TOOLS.has(toolName) && state === "output-available") {
-    return true
+function getRunScriptLabel(input: unknown) {
+  const code =
+    typeof input === "object" &&
+    input !== null &&
+    "code" in input &&
+    typeof input.code === "string"
+      ? input.code
+      : ""
+
+  if (/events\.create|googlecalendar\.api\.events\.create/i.test(code)) {
+    return "Creating calendar event"
   }
-  return !HIDDEN_TOOL_STATES.includes(state)
+  if (/events\.getmany|events\.getMany|getavailability/i.test(code)) {
+    return "Checking calendar"
+  }
+  if (/events\.delete/i.test(code)) {
+    return "Removing calendar event"
+  }
+  if (/events\.update/i.test(code)) {
+    return "Updating calendar event"
+  }
+  if (/gmail|messages\.send|threads\./i.test(code)) {
+    return "Working with email"
+  }
+  if (/labels\.|drafts\./i.test(code)) {
+    return "Updating inbox"
+  }
+
+  return "Working on your request"
 }
 
-export function isCompletedToolActivity(
+export function getToolStatusLabel(
   toolName: string,
-  state: ToolUIPart["state"],
+  input?: unknown,
 ) {
-  return VISIBLE_COMPLETED_TOOLS.has(toolName) && state === "output-available"
+  if (toolName === "run_script") {
+    return getRunScriptLabel(input)
+  }
+
+  return TOOL_STATUS_LABELS[toolName] ?? "Working on your request"
+}
+
+export type ActiveToolStatus = {
+  label: string
+  isError: boolean
+}
+
+export function getActiveToolStatusLine(
+  parts: UIMessage["parts"],
+): ActiveToolStatus | null {
+  let active: ActiveToolStatus | null = null
+
+  for (const part of parts) {
+    if (!isToolUIPart(part)) continue
+
+    const toolName = getToolName(part)
+    if (HIDDEN_TOOLS.has(toolName)) continue
+
+    if (part.state === "output-error") {
+      return {
+        label: `${getToolStatusLabel(toolName, part.input)} failed`,
+        isError: true,
+      }
+    }
+
+    if (FINISHED_TOOL_STATES.includes(part.state)) {
+      continue
+    }
+
+    active = {
+      label: getToolStatusLabel(toolName, part.input),
+      isError: false,
+    }
+  }
+
+  return active
 }

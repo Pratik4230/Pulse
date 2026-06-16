@@ -15,8 +15,10 @@ type AppShellProps = {
   children: React.ReactNode
   chatSessions?: ChatSession[]
   activeSessionId?: string
+  isStreaming?: boolean
   onNewChat?: () => void
   onSelectSession?: (id: string) => void
+  onDeleteSession?: (id: string) => void
 }
 
 export function AppShell({
@@ -24,16 +26,20 @@ export function AppShell({
   children,
   chatSessions,
   activeSessionId,
+  isStreaming,
   onNewChat,
   onSelectSession,
+  onDeleteSession,
 }: AppShellProps) {
   return (
     <>
       <PulseSidebar
         sessions={chatSessions}
         activeSessionId={activeSessionId}
+        isStreaming={isStreaming}
         onNewChat={onNewChat}
         onSelectSession={onSelectSession}
+        onDeleteSession={onDeleteSession}
       />
       <SidebarInset className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
         <header

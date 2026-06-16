@@ -17,6 +17,12 @@ import {
   buildPulseSystemPrompt,
   PULSE_CHAT_MODEL,
 } from "@/features/pulse/server/ai"
+import {
+  ensureChatSession,
+  resolveModelMessages,
+  saveChatMessages,
+} from "@/features/pulse/server/chat-store"
+import { getLatestUserMessageText } from "@/features/pulse/server/chat-messages"
 import { getUserLocale } from "@/features/user/server/get-user-locale"
 
 export const maxDuration = 60
@@ -31,8 +37,23 @@ export async function POST(req: Request) {
   }
 
   const tenantId = session.user.id
-  const { messages }: { messages: UIMessage[] } = await req.json()
+  const {
+    messages,
+    sessionId,
+  }: { messages: UIMessage[]; sessionId?: string } = await req.json()
 
+  if (!sessionId?.trim()) {
+    return Response.json({ error: "sessionId is required" }, { status: 400 })
+  }
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return Response.json({ error: "messages are required" }, { status: 400 })
+  }
+
+  const latestUserText = getLatestUserMessageText(messages)
+  const titleCandidate = latestUserText?.slice(0, 48)
+
+  await ensureChatSession(tenantId, sessionId, titleCandidate)
   await ensureCorsairTenant(tenantId)
   const integrations = await getIntegrationStatuses(tenantId)
 
@@ -44,6 +65,11 @@ export async function POST(req: Request) {
 
   try {
     const locale = await getUserLocale(tenantId)
+    const modelMessages = await resolveModelMessages(
+      tenantId,
+      sessionId,
+      messages,
+    )
 
     const webSearchTool = openai.tools.webSearch({
       searchContextSize: "medium",
@@ -72,14 +98,16 @@ export async function POST(req: Request) {
         ? (mergedTools as NonNullable<Parameters<typeof streamText>[0]["tools"]>)
         : undefined
 
-    const system = mcpClient?.instructions
+    const systemBase = mcpClient?.instructions
       ? `${buildPulseSystemPrompt(integrations, locale)}\n\n${mcpClient.instructions}`
       : buildPulseSystemPrompt(integrations, locale)
+
+    const system = systemBase
 
     const result = streamText({
       model: PULSE_CHAT_MODEL,
       system,
-      messages: await convertToModelMessages(messages),
+      messages: await convertToModelMessages(modelMessages),
       tools,
       stopWhen: stepCountIs(20),
       providerOptions: {
@@ -92,7 +120,19 @@ export async function POST(req: Request) {
       },
     })
 
-    return result.toUIMessageStreamResponse()
+    return result.toUIMessageStreamResponse({
+      originalMessages: messages,
+      onFinish: async ({ messages: finishedMessages }) => {
+        const title =
+          finishedMessages.length <= 2 && titleCandidate
+            ? titleCandidate
+            : undefined
+
+        await saveChatMessages(tenantId, sessionId, finishedMessages, {
+          title,
+        })
+      },
+    })
   } catch (error) {
     await mcpClient?.close()
     throw error

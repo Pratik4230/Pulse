@@ -1,8 +1,10 @@
 "use client"
 
 import { useChat } from "@ai-sdk/react"
-import { DefaultChatTransport } from "ai"
-import { useCallback } from "react"
+import { DefaultChatTransport, type UIMessage } from "ai"
+import { nanoid } from "nanoid"
+import { useCallback, useEffect, useLayoutEffect, useState } from "react"
+import { toast } from "sonner"
 
 import {
   Conversation,
@@ -17,46 +19,131 @@ import {
   PromptInputTextarea,
   type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input"
+import { Button } from "@/components/ui/button"
 import { Shimmer } from "@/components/ai-elements/shimmer"
 import { cn } from "@/lib/utils"
 
+import { fetchOlderChatMessages } from "@/features/pulse/hooks/use-chat-messages"
 import { PulseEmptyState } from "./pulse-empty-state"
 import { PulseMessage } from "./pulse-message"
 
+const pulseChatSessionId = { value: null as string | null }
+
+const pulseChatTransport = new DefaultChatTransport({
+  api: "/api/chat",
+  body: () => ({
+    sessionId: pulseChatSessionId.value,
+  }),
+})
+
 type PulseChatProps = {
-  onFirstMessage?: (title: string) => void
+  chatInstanceKey: string
+  sessionId: string | null
+  draftKey: number
+  initialMessages?: UIMessage[]
+  initialHasMore?: boolean
+  initialOldestSequence?: number | null
+  onSessionCreated?: (sessionId: string, title: string) => void
+  onConversationSaved?: (sessionId: string) => void
+  onStreamStatusChange?: (isStreaming: boolean) => void
 }
 
-export function PulseChat({ onFirstMessage }: PulseChatProps) {
-  const { messages, sendMessage, status, stop, error } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/chat",
-    }),
+export function PulseChat({
+  chatInstanceKey,
+  sessionId,
+  draftKey,
+  initialMessages = [],
+  initialHasMore = false,
+  initialOldestSequence = null,
+  onSessionCreated,
+  onConversationSaved,
+  onStreamStatusChange,
+}: PulseChatProps) {
+  useLayoutEffect(() => {
+    if (sessionId) {
+      pulseChatSessionId.value = sessionId
+    }
+  }, [sessionId])
+
+  const [hasOlder, setHasOlder] = useState(initialHasMore)
+  const [oldestSequence, setOldestSequence] = useState<number | null>(
+    initialOldestSequence,
+  )
+  const [loadingOlder, setLoadingOlder] = useState(false)
+
+  const { messages, sendMessage, status, stop, error, setMessages } = useChat({
+    id: chatInstanceKey,
+    messages: initialMessages,
+    transport: pulseChatTransport,
+    onFinish: () => {
+      const savedSessionId = pulseChatSessionId.value
+      if (savedSessionId) {
+        onConversationSaved?.(savedSessionId)
+      }
+    },
   })
+
+  useEffect(() => {
+    const isStreaming = status === "submitted" || status === "streaming"
+    onStreamStatusChange?.(isStreaming)
+  }, [onStreamStatusChange, status])
+
+  const ensureSessionId = useCallback(() => {
+    if (pulseChatSessionId.value) {
+      return pulseChatSessionId.value
+    }
+
+    const id = nanoid()
+    pulseChatSessionId.value = id
+    return id
+  }, [])
 
   const handleSubmit = useCallback(
     async ({ text }: PromptInputMessage) => {
       const trimmed = text.trim()
       if (!trimmed || status !== "ready") return
 
-      if (messages.length === 0) {
-        onFirstMessage?.(trimmed.slice(0, 48))
+      const isFirstMessage = messages.length === 0
+      const id = ensureSessionId()
+
+      if (isFirstMessage) {
+        onSessionCreated?.(id, trimmed.slice(0, 48))
       }
 
       await sendMessage({ text: trimmed })
     },
-    [messages.length, onFirstMessage, sendMessage, status],
+    [
+      ensureSessionId,
+      messages.length,
+      onSessionCreated,
+      sendMessage,
+      status,
+    ],
   )
 
   const handleSuggestion = useCallback(
     (suggestion: string) => {
-      void sendMessage({ text: suggestion })
-      if (messages.length === 0) {
-        onFirstMessage?.(suggestion.slice(0, 48))
-      }
+      void handleSubmit({ text: suggestion, files: [] })
     },
-    [messages.length, onFirstMessage, sendMessage],
+    [handleSubmit],
   )
+
+  const handleLoadOlder = useCallback(async () => {
+    const activeSessionId = pulseChatSessionId.value
+    if (!activeSessionId || oldestSequence == null || loadingOlder) return
+
+    setLoadingOlder(true)
+    try {
+      const page = await fetchOlderChatMessages(activeSessionId, oldestSequence)
+      setMessages((current) => [...page.messages, ...current])
+      setHasOlder(page.hasMore)
+      setOldestSequence(page.oldestSequence)
+    } catch {
+      toast.error("Could not load older messages")
+    } finally {
+      setLoadingOlder(false)
+    }
+  }, [loadingOlder, oldestSequence, setMessages])
 
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
@@ -67,7 +154,22 @@ export function PulseChat({ onFirstMessage }: PulseChatProps) {
 
       <Conversation className="relative h-full min-h-0 flex-1">
         <ConversationContent className="mx-auto w-full max-w-3xl gap-8 px-4 pb-6 pt-2 md:px-6">
-          {messages.length === 0 ? (
+          {hasOlder ? (
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+                disabled={loadingOlder}
+                onClick={() => void handleLoadOlder()}
+              >
+                {loadingOlder ? "Loading…" : "Load older messages"}
+              </Button>
+            </div>
+          ) : null}
+
+          {messages.length === 0 && status === "ready" ? (
             <PulseEmptyState onSuggestion={handleSuggestion} />
           ) : (
             messages.map((message) => (

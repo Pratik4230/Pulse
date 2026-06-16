@@ -1,14 +1,14 @@
 "use client"
 
 import type { UIMessage } from "ai"
-import { isToolUIPart } from "ai"
 import { Fragment } from "react"
 
 import { PulseLogo } from "@/components/brand/pulse-logo"
 import { cn } from "@/lib/utils"
 
 import { PulseRichContent } from "./pulse-rich-content"
-import { ToolActivity } from "./tool-activity"
+import { ToolStatusLine } from "./tool-activity"
+import { getActiveToolStatusLine } from "../lib/tool-status-labels"
 
 type PulseMessageProps = {
   message: UIMessage
@@ -30,12 +30,15 @@ export function PulseUserMessage({ text }: { text: string }) {
 }
 
 export function PulseAssistantMessage({ message }: PulseMessageProps) {
+  const activeStatus = getActiveToolStatusLine(message.parts)
+
   return (
     <div className="flex gap-3 pr-4">
       <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border/60 bg-card shadow-elevated">
         <PulseLogo size={18} imageClassName="size-[18px] rounded-md" />
       </div>
       <div className="min-w-0 flex-1 space-y-3">
+        {activeStatus ? <ToolStatusLine status={activeStatus} /> : null}
         {message.parts.map((part, index) => (
           <Fragment key={`${message.id}-${index}`}>
             {part.type === "text" ? (
@@ -47,7 +50,6 @@ export function PulseAssistantMessage({ message }: PulseMessageProps) {
                 <PulseRichContent text={part.text} />
               </div>
             ) : null}
-            {isToolUIPart(part) ? <ToolActivity part={part} /> : null}
           </Fragment>
         ))}
       </div>

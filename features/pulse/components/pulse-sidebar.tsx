@@ -9,6 +9,7 @@ import {
   MessageSquarePlus,
   Plug,
   Sparkles,
+  Trash2,
 } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -37,17 +38,19 @@ import {
 } from "@/components/ui/sidebar"
 import { signOut, useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
+import { useDeleteChatSession } from "@/features/pulse/hooks/use-chat-sessions"
 
-export type ChatSession = {
-  id: string
-  title: string
-}
+import type { ChatSessionListItem } from "@/features/pulse/types/chat"
+
+export type ChatSession = ChatSessionListItem
 
 type PulseSidebarProps = {
   sessions?: ChatSession[]
   activeSessionId?: string
+  isStreaming?: boolean
   onNewChat?: () => void
   onSelectSession?: (id: string) => void
+  onDeleteSession?: (id: string) => void
 }
 
 function getInitials(name?: string | null, email?: string | null) {
@@ -65,12 +68,30 @@ function getInitials(name?: string | null, email?: string | null) {
 export function PulseSidebar({
   sessions,
   activeSessionId,
+  isStreaming = false,
   onNewChat,
   onSelectSession,
+  onDeleteSession,
 }: PulseSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
   const { data: session } = useSession()
+  const deleteChatSession = useDeleteChatSession()
+
+  async function handleDeleteChat(sessionId: string) {
+    if (isStreaming) {
+      toast.message("Wait for Pulse to finish the current reply")
+      return
+    }
+
+    try {
+      await deleteChatSession.mutateAsync(sessionId)
+      onDeleteSession?.(sessionId)
+      toast.success("Conversation deleted")
+    } catch {
+      toast.error("Could not delete conversation")
+    }
+  }
   async function handleSignOut() {
     await signOut({
       fetchOptions: {
@@ -110,7 +131,7 @@ export function PulseSidebar({
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={onNewChat} tooltip="New chat">
+                    <SidebarMenuButton onClick={onNewChat} tooltip="New chat" disabled={isStreaming}>
                       <MessageSquarePlus />
                       <span>New chat</span>
                     </SidebarMenuButton>
@@ -124,16 +145,36 @@ export function PulseSidebar({
               <SidebarGroupContent>
                 <SidebarMenu>
                   {sessions.map((chat) => (
-                    <SidebarMenuItem key={chat.id}>
+                    <SidebarMenuItem
+                      key={chat.id}
+                      className="group/chat-item relative"
+                    >
                       <SidebarMenuButton
                         isActive={chat.id === activeSessionId}
                         onClick={() => onSelectSession(chat.id)}
                         tooltip={chat.title}
-                        className="group/chat"
+                        disabled={isStreaming && chat.id !== activeSessionId}
+                        className="group/chat pr-9"
                       >
                         <MessageSquare className="size-4 shrink-0 text-muted-foreground group-data-[active=true]/chat:text-primary" />
                         <span className="truncate">{chat.title}</span>
                       </SidebarMenuButton>
+                      <button
+                        type="button"
+                        aria-label={`Delete ${chat.title}`}
+                        disabled={isStreaming}
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          void handleDeleteChat(chat.id)
+                        }}
+                        className={cn(
+                          "absolute right-2 top-1/2 z-10 hidden size-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors",
+                          "hover:bg-destructive/10 hover:text-destructive group-hover/chat-item:flex",
+                          isStreaming && "pointer-events-none opacity-40",
+                        )}
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
                     </SidebarMenuItem>
                   ))}
                 </SidebarMenu>
