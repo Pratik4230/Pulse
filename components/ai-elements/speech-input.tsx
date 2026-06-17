@@ -68,12 +68,26 @@ export type SpeechInputProps = ComponentProps<typeof Button> & {
    * Return the transcribed text, which will be passed to onTranscriptionChange.
    */
   onAudioRecorded?: (audioBlob: Blob) => Promise<string>;
+  /** Auto-stop recording after this many milliseconds (media-recorder mode). */
+  maxDurationMs?: number;
+  /** Fired when recording hits `maxDurationMs`. */
+  onMaxDurationReached?: () => void;
   lang?: string;
 };
 
-const detectSpeechInputMode = (): SpeechInputMode => {
+const detectSpeechInputMode = (
+  onAudioRecorded?: SpeechInputProps["onAudioRecorded"],
+): SpeechInputMode => {
   if (typeof window === "undefined") {
     return "none";
+  }
+
+  if (
+    onAudioRecorded &&
+    "MediaRecorder" in window &&
+    "mediaDevices" in navigator
+  ) {
+    return "media-recorder";
   }
 
   if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
@@ -87,30 +101,92 @@ const detectSpeechInputMode = (): SpeechInputMode => {
   return "none";
 };
 
+function formatCountdown(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainder = seconds % 60;
+  return `${minutes}:${remainder.toString().padStart(2, "0")}`;
+}
+
 export const SpeechInput = ({
   className,
   onTranscriptionChange,
   onAudioRecorded,
+  maxDurationMs,
+  onMaxDurationReached,
   lang = "en-US",
   ...props
 }: SpeechInputProps) => {
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [mode] = useState<SpeechInputMode>(detectSpeechInputMode);
+  const [mode, setMode] = useState<SpeechInputMode>("none");
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [isRecognitionReady, setIsRecognitionReady] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const maxDurationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
   const onTranscriptionChangeRef = useRef<
     SpeechInputProps["onTranscriptionChange"]
   >(onTranscriptionChange);
   const onAudioRecordedRef =
     useRef<SpeechInputProps["onAudioRecorded"]>(onAudioRecorded);
+  const onMaxDurationReachedRef = useRef(onMaxDurationReached);
 
   // Keep refs in sync
   onTranscriptionChangeRef.current = onTranscriptionChange;
   onAudioRecordedRef.current = onAudioRecorded;
+  onMaxDurationReachedRef.current = onMaxDurationReached;
+
+  useEffect(() => {
+    setMode(detectSpeechInputMode(onAudioRecorded));
+  }, [onAudioRecorded]);
+
+  const clearCountdown = useCallback(() => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    setRemainingSeconds(null);
+  }, []);
+
+  const clearMaxDurationTimer = useCallback(() => {
+    if (maxDurationTimerRef.current) {
+      clearTimeout(maxDurationTimerRef.current);
+      maxDurationTimerRef.current = null;
+    }
+  }, []);
+
+  const stopTimers = useCallback(() => {
+    clearMaxDurationTimer();
+    clearCountdown();
+  }, [clearCountdown, clearMaxDurationTimer]);
+
+  const startCountdown = useCallback(() => {
+    if (!maxDurationMs || maxDurationMs <= 0) {
+      return;
+    }
+
+    clearCountdown();
+    const totalSeconds = Math.ceil(maxDurationMs / 1000);
+    setRemainingSeconds(totalSeconds);
+
+    countdownIntervalRef.current = setInterval(() => {
+      setRemainingSeconds((current) => {
+        if (current == null || current <= 1) {
+          if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current);
+            countdownIntervalRef.current = null;
+          }
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+  }, [clearCountdown, maxDurationMs]);
 
   // Initialize Speech Recognition when mode is speech-recognition
   useEffect(() => {
@@ -180,6 +256,7 @@ export const SpeechInput = ({
   // Cleanup MediaRecorder and stream on unmount
   useEffect(
     () => () => {
+      stopTimers();
       if (mediaRecorderRef.current?.state === "recording") {
         mediaRecorderRef.current.stop();
       }
@@ -189,7 +266,7 @@ export const SpeechInput = ({
         }
       }
     },
-    []
+    [stopTimers],
   );
 
   // Start MediaRecorder recording
@@ -211,6 +288,7 @@ export const SpeechInput = ({
       };
 
       const handleStop = async () => {
+        stopTimers();
         for (const track of stream.getTracks()) {
           track.stop();
         }
@@ -236,6 +314,7 @@ export const SpeechInput = ({
       };
 
       const handleError = () => {
+        stopTimers();
         setIsListening(false);
         for (const track of stream.getTracks()) {
           track.stop();
@@ -250,18 +329,32 @@ export const SpeechInput = ({
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start();
       setIsListening(true);
+      startCountdown();
+
+      if (maxDurationMs && maxDurationMs > 0) {
+        maxDurationTimerRef.current = setTimeout(() => {
+          maxDurationTimerRef.current = null;
+          if (mediaRecorderRef.current?.state === "recording") {
+            mediaRecorderRef.current.stop();
+          }
+          setIsListening(false);
+          onMaxDurationReachedRef.current?.();
+        }, maxDurationMs);
+      }
     } catch {
+      stopTimers();
       setIsListening(false);
     }
-  }, []);
+  }, [maxDurationMs, startCountdown, stopTimers]);
 
   // Stop MediaRecorder recording
   const stopMediaRecorder = useCallback(() => {
+    stopTimers();
     if (mediaRecorderRef.current?.state === "recording") {
       mediaRecorderRef.current.stop();
     }
     setIsListening(false);
-  }, []);
+  }, [stopTimers]);
 
   const toggleListening = useCallback(() => {
     if (mode === "speech-recognition" && recognitionRef.current) {
@@ -286,8 +379,21 @@ export const SpeechInput = ({
     (mode === "media-recorder" && !onAudioRecorded) ||
     isProcessing;
 
+  const showCountdown =
+    isListening && remainingSeconds != null && maxDurationMs != null;
+
   return (
-    <div className="relative inline-flex items-center justify-center">
+    <div className="relative inline-flex items-center gap-2">
+      {showCountdown ? (
+        <span
+          aria-live="polite"
+          className="min-w-11 tabular-nums text-xs text-muted-foreground"
+        >
+          {formatCountdown(remainingSeconds)}
+        </span>
+      ) : null}
+
+      <div className="relative inline-flex items-center justify-center">
       {/* Animated pulse rings */}
       {isListening &&
         [0, 1, 2].map((index) => (
@@ -318,6 +424,7 @@ export const SpeechInput = ({
         {!isProcessing && isListening && <SquareIcon className="size-4" />}
         {!(isProcessing || isListening) && <MicIcon className="size-4" />}
       </Button>
+      </div>
     </div>
   );
 };

@@ -25,7 +25,8 @@ import { Shimmer } from "@/components/ai-elements/shimmer"
 import { cn } from "@/lib/utils"
 
 import { fetchOlderChatMessages } from "@/features/pulse/hooks/use-chat-messages"
-import { CHAT_MAX_MESSAGE_CHARS } from "@/features/pulse/validations"
+import { useTranscribeAudio } from "@/features/pulse/hooks/use-transcribe-audio"
+import { CHAT_MAX_MESSAGE_CHARS, MAX_VOICE_RECORDING_MS } from "@/features/pulse/validations"
 import { PulseEmptyState } from "./pulse-empty-state"
 import { PulseMessage } from "./pulse-message"
 
@@ -71,6 +72,8 @@ export function PulseChat({
     initialOldestSequence
   )
   const [loadingOlder, setLoadingOlder] = useState(false)
+
+  const transcribeAudio = useTranscribeAudio()
 
   const { messages, sendMessage, status, stop, error, setMessages } = useChat({
     id: chatInstanceKey,
@@ -152,6 +155,27 @@ export function PulseChat({
     input.dispatchEvent(new Event("input", { bubbles: true }))
     input.focus()
   }, [])
+
+  const handleTranscriptionError = useCallback(() => {
+    toast.error("Could not transcribe audio. Try again.")
+  }, [])
+
+  const handleMaxRecordingDuration = useCallback(() => {
+    toast.message("Recording stopped — 27 second limit reached")
+  }, [])
+
+  const handleAudioRecorded = useCallback(
+    async (audioBlob: Blob) => {
+      try {
+        const result = await transcribeAudio.mutateAsync(audioBlob)
+        return result.transcript
+      } catch {
+        handleTranscriptionError()
+        return ""
+      }
+    },
+    [handleTranscriptionError, transcribeAudio],
+  )
 
   useEffect(() => {
     function handleFocusComposer() {
@@ -264,6 +288,9 @@ export function PulseChat({
                 variant="ghost"
                 size="icon-sm"
                 className="text-muted-foreground hover:text-foreground"
+                maxDurationMs={MAX_VOICE_RECORDING_MS}
+                onMaxDurationReached={handleMaxRecordingDuration}
+                onAudioRecorded={handleAudioRecorded}
                 onTranscriptionChange={handleTranscriptionChange}
               />
               <div className="flex items-center gap-1">
