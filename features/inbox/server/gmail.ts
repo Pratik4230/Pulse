@@ -1,5 +1,3 @@
-import { timeServerStep } from "@/lib/request-timer"
-
 import type {
   InboxFilter,
   InboxListItem,
@@ -110,16 +108,12 @@ async function fetchListMetadata(
 ): Promise<InboxListItem[]> {
   if (ids.length === 0) return []
 
-  const fetched = await timeServerStep(
-    `gmail.raw.messages.get(metadata) x${ids.length}`,
-    () =>
-      mapWithConcurrency(ids, SYNC_CONCURRENCY, (id) =>
-        gmailRawGetMessage(tenantId, {
-          id,
-          format: "metadata",
-          metadataHeaders: LIST_METADATA_HEADERS,
-        }),
-      ),
+  const fetched = await mapWithConcurrency(ids, SYNC_CONCURRENCY, (id) =>
+    gmailRawGetMessage(tenantId, {
+      id,
+      format: "metadata",
+      metadataHeaders: LIST_METADATA_HEADERS,
+    }),
   )
 
   return fetched.flatMap((message) => {
@@ -152,14 +146,12 @@ export async function listInboxPage(
   pageToken?: string,
   search?: string,
 ): Promise<InboxListPage> {
-  const listResponse = await timeServerStep("gmail.raw.messages.list", () =>
-    gmailRawListMessages(tenantId, {
-      labelIds: ["INBOX"],
-      maxResults: INBOX_PAGE_SIZE,
-      pageToken,
-      q: buildInboxQuery(filter, search),
-    }),
-  )
+  const listResponse = await gmailRawListMessages(tenantId, {
+    labelIds: ["INBOX"],
+    maxResults: INBOX_PAGE_SIZE,
+    pageToken,
+    q: buildInboxQuery(filter, search),
+  })
 
   const messages = (listResponse.messages ?? [])
     .map((stub) => stubToListItem(stub, filter))
@@ -176,22 +168,16 @@ export async function getInboxThread(
   tenantId: string,
   messageId: string,
 ): Promise<InboxThreadDetail | null> {
-  const focusMessage = await timeServerStep(
-    "gmail.raw.messages.get (minimal)",
-    () =>
-      gmailRawGetMessage(tenantId, {
-        id: messageId,
-        format: "minimal",
-      }),
-  )
+  const focusMessage = await gmailRawGetMessage(tenantId, {
+    id: messageId,
+    format: "minimal",
+  })
 
   const threadId = focusMessage.threadId ?? messageId
-  const thread = await timeServerStep("gmail.raw.threads.get", () =>
-    gmailRawGetThread(tenantId, {
-      id: threadId,
-      format: "full",
-    }),
-  )
+  const thread = await gmailRawGetThread(tenantId, {
+    id: threadId,
+    format: "full",
+  })
 
   const sortedMessages = [...(thread.messages ?? [])].sort(
     (a, b) => getMessageInternalTime(a) - getMessageInternalTime(b),

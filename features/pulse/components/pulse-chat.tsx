@@ -26,7 +26,10 @@ import { cn } from "@/lib/utils"
 
 import { fetchOlderChatMessages } from "@/features/pulse/hooks/use-chat-messages"
 import { useTranscribeAudio } from "@/features/pulse/hooks/use-transcribe-audio"
-import { CHAT_MAX_MESSAGE_CHARS, MAX_VOICE_RECORDING_MS } from "@/features/pulse/validations"
+import {
+  CHAT_MAX_MESSAGE_CHARS,
+  MAX_VOICE_RECORDING_MS,
+} from "@/features/pulse/validations"
 import { PulseEmptyState } from "./pulse-empty-state"
 import { PulseMessage } from "./pulse-message"
 
@@ -174,7 +177,7 @@ export function PulseChat({
         return ""
       }
     },
-    [handleTranscriptionError, transcribeAudio],
+    [handleTranscriptionError, transcribeAudio]
   )
 
   useEffect(() => {

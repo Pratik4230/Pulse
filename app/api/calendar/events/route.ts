@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server"
+
 import {
   createCalendarEvent,
   listUpcomingEvents,
@@ -13,30 +15,23 @@ import {
   getIntegrationStatuses,
 } from "@/features/integrations/core/server/tenant"
 import { resolveUserLocale } from "@/lib/locale"
-import { createRequestTimer } from "@/lib/request-timer"
 
 export const runtime = "nodejs"
 
 export async function GET(request: Request) {
-  const timer = createRequestTimer("GET /api/calendar/events")
-
-  const session = await timer.time("session", () =>
-    getSessionFromRequest(request),
-  )
+  const session = await getSessionFromRequest(request)
 
   if (!session) {
-    return timer.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const tenantId = session.user.id
 
   try {
-    const integrations = await timer.time("integration_status", () =>
-      getIntegrationStatuses(tenantId),
-    )
+    const integrations = await getIntegrationStatuses(tenantId)
 
     if (integrations.googlecalendar !== "connected") {
-      return timer.json(
+      return NextResponse.json(
         {
           error: "Google Calendar is not connected",
           code: "CALENDAR_NOT_CONNECTED",
@@ -45,9 +40,7 @@ export async function GET(request: Request) {
       )
     }
 
-    await timer.time("ensure_corsair_tenant", () =>
-      ensureCorsairTenant(tenantId),
-    )
+    await ensureCorsairTenant(tenantId)
 
     const { searchParams } = new URL(request.url)
     const parsedQuery = calendarEventsQuerySchema.safeParse({
@@ -56,20 +49,18 @@ export async function GET(request: Request) {
       start: searchParams.get("start") ?? undefined,
     })
     if (!parsedQuery.success) {
-      return timer.json({ error: "Invalid calendar query" }, { status: 400 })
+      return NextResponse.json({ error: "Invalid calendar query" }, { status: 400 })
     }
     const days = parsedQuery.data.days ?? null
     const pageToken = parsedQuery.data.pageToken
     const start = parsedQuery.data.start
 
-    const result = await timer.time("list_upcoming_events", () =>
-      listUpcomingEvents(tenantId, days, pageToken, start),
-    )
+    const result = await listUpcomingEvents(tenantId, days, pageToken, start)
 
-    return timer.json(result)
+    return NextResponse.json(result)
   } catch (err) {
     if (isCalendarNotConnectedError(err)) {
-      return timer.json(
+      return NextResponse.json(
         {
           error: "Google Calendar is not connected",
           code: "CALENDAR_NOT_CONNECTED",
@@ -80,30 +71,24 @@ export async function GET(request: Request) {
 
     const message =
       err instanceof Error ? err.message : "Failed to load calendar events"
-    return timer.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
-  const timer = createRequestTimer("POST /api/calendar/events")
-
-  const session = await timer.time("session", () =>
-    getSessionFromRequest(request),
-  )
+  const session = await getSessionFromRequest(request)
 
   if (!session) {
-    return timer.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const tenantId = session.user.id
 
   try {
-    const integrations = await timer.time("integration_status", () =>
-      getIntegrationStatuses(tenantId),
-    )
+    const integrations = await getIntegrationStatuses(tenantId)
 
     if (integrations.googlecalendar !== "connected") {
-      return timer.json(
+      return NextResponse.json(
         {
           error: "Google Calendar is not connected",
           code: "CALENDAR_NOT_CONNECTED",
@@ -112,25 +97,21 @@ export async function POST(request: Request) {
       )
     }
 
-    await timer.time("ensure_corsair_tenant", () =>
-      ensureCorsairTenant(tenantId),
-    )
+    await ensureCorsairTenant(tenantId)
 
     const parsedBody = createCalendarEventSchema.safeParse(await request.json())
     if (!parsedBody.success) {
-      return timer.json({ error: "Invalid event payload" }, { status: 400 })
+      return NextResponse.json({ error: "Invalid event payload" }, { status: 400 })
     }
     const body = parsedBody.data as CreateCalendarEventInput
     const locale = resolveUserLocale(session.user)
 
-    const event = await timer.time("create_calendar_event", () =>
-      createCalendarEvent(tenantId, body, { timeZone: locale.timezone }),
-    )
+    const event = await createCalendarEvent(tenantId, body, { timeZone: locale.timezone })
 
-    return timer.json({ event })
+    return NextResponse.json({ event })
   } catch (err) {
     if (isCalendarNotConnectedError(err)) {
-      return timer.json(
+      return NextResponse.json(
         {
           error: "Google Calendar is not connected",
           code: "CALENDAR_NOT_CONNECTED",
@@ -141,7 +122,7 @@ export async function POST(request: Request) {
 
     const message =
       err instanceof Error ? err.message : "Failed to create calendar event"
-    return timer.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 

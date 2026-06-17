@@ -20,10 +20,8 @@ type OAuthKeys = {
   set_expires_at: (value: string) => Promise<void>
 }
 
-function getWebhookUrl(tenantId: string) {
-  const url = new URL("/api/webhooks/corsair", getAppBaseUrl())
-  url.searchParams.set("tenantId", tenantId)
-  return url.toString()
+function getWebhookUrl() {
+  return new URL("/api/webhooks/corsair", getAppBaseUrl()).toString()
 }
 
 function getPluginKeys(tenantId: string, plugin: IntegrationId): OAuthKeys {
@@ -80,12 +78,7 @@ async function getPluginAccessToken(
 
 async function registerGmailWatch(tenantId: string, webhookUrl: string) {
   const topicName = process.env.GOOGLE_PUBSUB_TOPIC
-  if (!topicName) {
-    console.warn(
-      "[webhooks] GOOGLE_PUBSUB_TOPIC is not set — skipping Gmail push watch",
-    )
-    return
-  }
+  if (!topicName) return
 
   const token = await getPluginAccessToken(tenantId, "gmail")
   const response = await fetch(
@@ -142,7 +135,7 @@ export async function registerIntegrationWebhooks(
 ) {
   await ensureCorsairTenant(tenantId)
 
-  const webhookUrl = getWebhookUrl(tenantId)
+  const webhookUrl = getWebhookUrl()
 
   if (plugin === "gmail") {
     await registerGmailWatch(tenantId, webhookUrl)
