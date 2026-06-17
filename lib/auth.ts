@@ -8,6 +8,7 @@ import * as authSchema from "@/db/schema/auth"
 import { localeSchema } from "@/features/auth/validations"
 import { COUNTRY_CODES, getCurrencyByCountry } from "@/lib/currencies"
 import { sendEmail, sendOtpEmail } from "@/lib/email"
+import { getAuthTrustedOrigins } from "@/lib/auth-origins"
 import { getDefaultTimezone, getTimezoneOptions } from "@/lib/timezones"
 
 function normalizeLocaleFields<T extends Record<string, unknown>>(record: T) {
@@ -45,6 +46,7 @@ function normalizeLocaleFields<T extends Record<string, unknown>>(record: T) {
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: getAuthTrustedOrigins(),
   secret: process.env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, {
     provider: "pg",
