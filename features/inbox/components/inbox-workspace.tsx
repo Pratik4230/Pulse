@@ -13,10 +13,12 @@ import type { InboxFilter } from "../types"
 import { InboxConnectPrompt } from "./inbox-connect-prompt"
 import { InboxList } from "./inbox-list"
 import { InboxPreview } from "./inbox-preview"
-import { InboxToolbar } from "./inbox-toolbar"
+import { InboxToolbar, INBOX_SEARCH_INPUT_ID } from "./inbox-toolbar"
 
 export function InboxWorkspace() {
   const [filter, setFilter] = useState<InboxFilter>("all")
+  const [searchInput, setSearchInput] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const { data: statusData, isLoading: isStatusLoading } =
@@ -32,7 +34,7 @@ export function InboxWorkspace() {
     hasNextPage,
     fetchNextPage,
     refetch: refetchList,
-  } = useInboxMessages(filter, gmailConnected)
+  } = useInboxMessages(filter, gmailConnected, searchQuery)
 
   const displaySelectedId = useMemo(() => {
     if (!messages?.length) return null
@@ -54,6 +56,15 @@ export function InboxWorkspace() {
     setFilter(next)
     setSelectedId(null)
   }, [])
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setSearchQuery(searchInput.trim())
+      setSelectedId(null)
+    }, 700)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [searchInput])
 
   const handleRefresh = useCallback(() => {
     void refetchList()
@@ -80,6 +91,21 @@ export function InboxWorkspace() {
       if (event.key === "r" && !event.metaKey && !event.ctrlKey && !event.altKey) {
         event.preventDefault()
         handleRefresh()
+        return
+      }
+
+      if (
+        event.key === "/" &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey
+      ) {
+        event.preventDefault()
+        const input = document.getElementById(INBOX_SEARCH_INPUT_ID)
+        if (input instanceof HTMLInputElement) {
+          input.focus()
+          input.select()
+        }
         return
       }
 
@@ -136,6 +162,8 @@ export function InboxWorkspace() {
       >
         <InboxToolbar
           filter={filter}
+          search={searchInput}
+          onSearchChange={setSearchInput}
           onFilterChange={handleFilterChange}
           onRefresh={handleRefresh}
           isRefreshing={isListFetching}
@@ -153,6 +181,7 @@ export function InboxWorkspace() {
             hasNextPage={hasNextPage}
             isFetchingNextPage={isFetchingNextPage}
             onLoadMore={handleLoadMore}
+            hasSearch={Boolean(searchQuery)}
           />
         </div>
       </section>

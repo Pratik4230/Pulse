@@ -3,4 +3,5 @@ import * as z from "zod"
 export const inboxMessagesQuerySchema = z.object({
   filter: z.enum(["all", "unread"]).optional(),
   pageToken: z.string().max(500).optional(),
+  q: z.string().trim().max(200).optional(),
 })

@@ -40,15 +40,17 @@ export async function GET(request: Request) {
     const parsedQuery = inboxMessagesQuerySchema.safeParse({
       filter: searchParams.get("filter") ?? undefined,
       pageToken: searchParams.get("pageToken") ?? undefined,
+      q: searchParams.get("q") ?? undefined,
     })
     if (!parsedQuery.success) {
       return timer.json({ error: "Invalid inbox query" }, { status: 400 })
     }
     const filter = (parsedQuery.data.filter ?? "all") as InboxFilter
     const pageToken = parsedQuery.data.pageToken
+    const query = parsedQuery.data.q
 
     const page = await timer.time("list_inbox_page", () =>
-      listInboxPage(tenantId, filter, pageToken),
+      listInboxPage(tenantId, filter, pageToken, query),
     )
 
     return timer.json(page)

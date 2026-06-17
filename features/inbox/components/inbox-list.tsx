@@ -24,6 +24,7 @@ type InboxListProps = {
   hasNextPage?: boolean
   isFetchingNextPage?: boolean
   onLoadMore?: () => void
+  hasSearch?: boolean
 }
 
 function InboxListSkeleton() {
@@ -57,6 +58,7 @@ export function InboxList({
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
+  hasSearch = false,
 }: InboxListProps) {
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const listRootRef = useRef<HTMLDivElement>(null)
@@ -108,9 +110,13 @@ export function InboxList({
   if (!messages?.length) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
-        <p className="text-sm font-medium text-foreground">Inbox is empty</p>
+        <p className="text-sm font-medium text-foreground">
+          {hasSearch ? "No matching messages" : "Inbox is empty"}
+        </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          No messages match this view.
+          {hasSearch
+            ? "Try a different search term or clear the search."
+            : "No messages match this view."}
         </p>
       </div>
     )

@@ -7,8 +7,13 @@ import { useEffect, useMemo, useRef } from "react"
 
 import type { InboxFilter, InboxListItem, InboxListPage } from "../types"
 
-async function fetchInboxPage(filter: InboxFilter, pageToken?: string) {
+async function fetchInboxPage(
+  filter: InboxFilter,
+  query: string,
+  pageToken?: string,
+) {
   const params = new URLSearchParams({ filter })
+  if (query) params.set("q", query)
   if (pageToken) params.set("pageToken", pageToken)
 
   const response = await fetch(`/api/inbox/messages?${params}`)
@@ -76,17 +81,21 @@ function mergeEnrichedIntoPages(
   }
 }
 
-export function inboxMessagesQueryKey(filter: InboxFilter) {
-  return ["inbox", "messages", filter] as const
+export function inboxMessagesQueryKey(filter: InboxFilter, query = "") {
+  return ["inbox", "messages", filter, query] as const
 }
 
-export function useInboxMessages(filter: InboxFilter, enabled = true) {
+export function useInboxMessages(
+  filter: InboxFilter,
+  enabled = true,
+  query = "",
+) {
   const queryClient = useQueryClient()
   const enrichingIdsRef = useRef(new Set<string>())
 
   const infinite = useInfiniteQuery({
-    queryKey: inboxMessagesQueryKey(filter),
-    queryFn: ({ pageParam }) => fetchInboxPage(filter, pageParam),
+    queryKey: inboxMessagesQueryKey(filter, query),
+    queryFn: ({ pageParam }) => fetchInboxPage(filter, query, pageParam),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextPageToken ?? undefined,
     enabled,
@@ -126,7 +135,7 @@ export function useInboxMessages(filter: InboxFilter, enabled = true) {
         if (cancelled || enriched.length === 0) return
 
         queryClient.setQueryData<InfiniteData<InboxListPage>>(
-          inboxMessagesQueryKey(filter),
+          inboxMessagesQueryKey(filter, query),
           (current) =>
             current ? mergeEnrichedIntoPages(current, enriched) : current,
         )
@@ -145,7 +154,7 @@ export function useInboxMessages(filter: InboxFilter, enabled = true) {
     return () => {
       cancelled = true
     }
-  }, [enabled, filter, queryClient, unenrichedKey])
+  }, [enabled, filter, query, queryClient, unenrichedKey])
 
   return {
     messages,

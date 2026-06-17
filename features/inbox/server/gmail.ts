@@ -136,17 +136,28 @@ export async function enrichInboxListItems(
   return fetchListMetadata(tenantId, ids, filter)
 }
 
+function buildInboxQuery(filter: InboxFilter, search?: string) {
+  const parts: string[] = []
+  if (filter === "unread") parts.push("is:unread")
+
+  const trimmed = search?.trim()
+  if (trimmed) parts.push(trimmed)
+
+  return parts.length > 0 ? parts.join(" ") : undefined
+}
+
 export async function listInboxPage(
   tenantId: string,
   filter: InboxFilter,
   pageToken?: string,
+  search?: string,
 ): Promise<InboxListPage> {
   const listResponse = await timeServerStep("gmail.raw.messages.list", () =>
     gmailRawListMessages(tenantId, {
       labelIds: ["INBOX"],
       maxResults: INBOX_PAGE_SIZE,
       pageToken,
-      ...(filter === "unread" ? { q: "is:unread" } : {}),
+      q: buildInboxQuery(filter, search),
     }),
   )
 
