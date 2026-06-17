@@ -7,6 +7,16 @@ import {
 
 const POLL_INTERVAL_MS = 2_000
 
+function parseLastEventId(request: Request) {
+  const value = request.headers.get("last-event-id")
+  if (!value) return null
+
+  const millis = Number(value)
+  if (!Number.isFinite(millis) || millis <= 0) return null
+
+  return new Date(millis)
+}
+
 export async function GET(request: Request) {
   const session = await getSessionFromRequest(request)
   if (!session) {
@@ -14,7 +24,7 @@ export async function GET(request: Request) {
   }
 
   const tenantId = session.user.id
-  let lastSeen = new Date()
+  let lastSeen = parseLastEventId(request) ?? new Date()
   let pollTimer: ReturnType<typeof setInterval> | undefined
   let listener:
     | {
@@ -22,6 +32,16 @@ export async function GET(request: Request) {
         encoder: TextEncoder
       }
     | undefined
+
+  const runPoll = () => {
+    void pollAndBroadcastSyncEvents(tenantId, lastSeen)
+      .then((nextSeen) => {
+        lastSeen = nextSeen
+      })
+      .catch(() => {
+        // Ignore transient DB errors during polling.
+      })
+  }
 
   const cleanup = () => {
     if (pollTimer) {
@@ -44,15 +64,9 @@ export async function GET(request: Request) {
       subscribeSyncBroadcast(tenantId, listener)
       controller.enqueue(listener.encoder.encode(": connected\n\n"))
 
-      pollTimer = setInterval(() => {
-        void pollAndBroadcastSyncEvents(tenantId, lastSeen)
-          .then((nextSeen) => {
-            lastSeen = nextSeen
-          })
-          .catch(() => {
-            // Ignore transient DB errors during polling.
-          })
-      }, POLL_INTERVAL_MS)
+      // Poll immediately to catch events that happened while disconnected.
+      runPoll()
+      pollTimer = setInterval(runPoll, POLL_INTERVAL_MS)
 
       request.signal.addEventListener("abort", cleanup)
     },

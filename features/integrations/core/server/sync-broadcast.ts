@@ -39,12 +39,13 @@ export function unsubscribeSyncBroadcast(
 export function broadcastSyncInvalidation(
   tenantId: string,
   scope: SyncScope,
+  at = Date.now(),
 ) {
   const listeners = listenersByTenant.get(tenantId)
   if (!listeners?.size) return
 
-  const payload = JSON.stringify({ scope, at: Date.now() })
-  const message = `data: ${payload}\n\n`
+  const payload = JSON.stringify({ scope, at })
+  const message = `id: ${at}\ndata: ${payload}\n\n`
   const encoded = new TextEncoder().encode(message)
 
   for (const listener of listeners) {
