@@ -3,6 +3,10 @@ import * as z from "zod"
 export const calendarEventsQuerySchema = z.object({
   days: z.coerce.number().int().min(1).max(30).optional(),
   pageToken: z.string().min(1).max(500).optional(),
+  start: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 })
 
 export const createCalendarEventSchema = z.object({

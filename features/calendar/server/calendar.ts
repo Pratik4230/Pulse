@@ -47,8 +47,13 @@ function toCalendarEventItem(
   }
 }
 
-function getRange(days?: number | null) {
-  const timeMin = new Date()
+function parseLocalDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number)
+  return new Date(year, month - 1, day)
+}
+
+function getRange(days?: number | null, start?: string) {
+  const timeMin = start ? parseLocalDate(start) : new Date()
   timeMin.setHours(0, 0, 0, 0)
 
   if (days == null) {
@@ -70,15 +75,30 @@ function getRange(days?: number | null) {
 export async function listUpcomingEvents(
   tenantId: string,
   days: number | null = null,
-  pageToken?: string
+  pageToken?: string,
+  start?: string,
 ): Promise<CalendarEventsResponse> {
   const normalizedDays =
     typeof days === "number" && Number.isFinite(days) ? days : null
   const effectiveDays = normalizedDays ?? null
-  const { timeMin, timeMax } = getRange(effectiveDays)
+  const { timeMin, timeMax } = getRange(effectiveDays, start)
+
+  if (effectiveDays != null && !pageToken) {
+    return listAllEventsInRange(tenantId, timeMin, timeMax ?? undefined)
+  }
+
+  return listEventsPage(tenantId, timeMin, timeMax ?? undefined, pageToken)
+}
+
+async function listEventsPage(
+  tenantId: string,
+  timeMin: string,
+  timeMax: string | undefined,
+  pageToken?: string,
+): Promise<CalendarEventsResponse> {
   const response = await calendarRawListEvents(tenantId, {
     timeMin,
-    timeMax: effectiveDays == null ? undefined : (timeMax ?? undefined),
+    timeMax,
     maxResults: MAX_EVENTS_PER_PAGE,
     pageToken,
     singleEvents: true,
@@ -93,8 +113,36 @@ export async function listUpcomingEvents(
   return {
     events,
     timeMin,
-    timeMax,
+    timeMax: timeMax ?? null,
     nextPageToken: response.nextPageToken ?? null,
+  }
+}
+
+const MAX_WEEK_EVENTS = 500
+
+async function listAllEventsInRange(
+  tenantId: string,
+  timeMin: string,
+  timeMax?: string,
+): Promise<CalendarEventsResponse> {
+  const events: CalendarEventItem[] = []
+  let pageToken: string | undefined
+
+  do {
+    const page = await listEventsPage(tenantId, timeMin, timeMax, pageToken)
+    events.push(...page.events)
+    pageToken = page.nextPageToken ?? undefined
+  } while (pageToken && events.length < MAX_WEEK_EVENTS)
+
+  const unique = Array.from(
+    new Map(events.map((event) => [event.id, event])).values(),
+  ).sort((a, b) => a.start.localeCompare(b.start))
+
+  return {
+    events: unique,
+    timeMin,
+    timeMax: timeMax ?? null,
+    nextPageToken: null,
   }
 }
 

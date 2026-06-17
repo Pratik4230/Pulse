@@ -53,15 +53,17 @@ export async function GET(request: Request) {
     const parsedQuery = calendarEventsQuerySchema.safeParse({
       days: searchParams.get("days") ?? undefined,
       pageToken: searchParams.get("pageToken") ?? undefined,
+      start: searchParams.get("start") ?? undefined,
     })
     if (!parsedQuery.success) {
       return timer.json({ error: "Invalid calendar query" }, { status: 400 })
     }
     const days = parsedQuery.data.days ?? null
     const pageToken = parsedQuery.data.pageToken
+    const start = parsedQuery.data.start
 
     const result = await timer.time("list_upcoming_events", () =>
-      listUpcomingEvents(tenantId, days, pageToken),
+      listUpcomingEvents(tenantId, days, pageToken, start),
     )
 
     return timer.json(result)

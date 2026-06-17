@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, Clock, ExternalLink, MapPin, Users } from "lucide-react"
+import { Calendar, Clock, MapPin, Users } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -203,84 +203,5 @@ export function CalendarEventList({
         </div>
       </div>
     </ScrollArea>
-  )
-}
-
-type CalendarEventDetailProps = {
-  event: CalendarEventItem | null
-}
-
-export function CalendarEventDetail({ event }: CalendarEventDetailProps) {
-  if (!event) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
-        Select an event to view details
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <div className="border-b border-border/80 px-6 py-5">
-        <h2 className="text-lg font-semibold tracking-tight">{event.title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {formatEventTime(event)}
-        </p>
-      </div>
-
-      <ScrollArea className="flex-1">
-        <div className="space-y-5 px-6 py-5">
-          {event.location ? (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Location
-              </p>
-              <p className="mt-1 text-sm">{event.location}</p>
-            </div>
-          ) : null}
-
-          {event.description ? (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Description
-              </p>
-              <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">
-                {event.description}
-              </p>
-            </div>
-          ) : null}
-
-          {event.attendees.length > 0 ? (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Attendees
-              </p>
-              <ul className="mt-2 space-y-1">
-                {event.attendees.map((attendee) => (
-                  <li key={attendee.email} className="text-sm">
-                    {attendee.displayName ?? attendee.email}
-                    {attendee.displayName ? (
-                      <span className="text-muted-foreground">
-                        {" "}
-                        · {attendee.email}
-                      </span>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
-          {event.htmlLink ? (
-            <Button variant="outline" size="sm" asChild>
-              <a href={event.htmlLink} target="_blank" rel="noreferrer">
-                <ExternalLink className="size-4" />
-                Open in Google Calendar
-              </a>
-            </Button>
-          ) : null}
-        </div>
-      </ScrollArea>
-    </div>
   )
 }

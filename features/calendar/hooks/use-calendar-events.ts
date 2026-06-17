@@ -11,14 +11,19 @@ import type {
 
 async function fetchCalendarEvents({
   days,
+  start,
   pageToken,
 }: {
   days?: number | null
+  start?: string
   pageToken?: string
 }) {
   const params = new URLSearchParams()
   if (typeof days === "number") {
     params.set("days", String(days))
+  }
+  if (start) {
+    params.set("start", start)
   }
   if (pageToken) {
     params.set("pageToken", pageToken)
@@ -41,6 +46,14 @@ async function fetchCalendarEvents({
   return response.json() as Promise<CalendarEventsResponse>
 }
 
+export async function fetchCalendarEventsPage(options: {
+  days?: number | null
+  start?: string
+  pageToken?: string
+}) {
+  return fetchCalendarEvents(options)
+}
+
 async function createCalendarEvent(input: CreateCalendarEventInput) {
   const response = await fetch("/api/calendar/events", {
     method: "POST",
@@ -58,15 +71,26 @@ async function createCalendarEvent(input: CreateCalendarEventInput) {
   return response.json() as Promise<{ event: CalendarEventsResponse["events"][number] }>
 }
 
-export function calendarEventsQueryKey(days?: number | null) {
-  return ["calendar", "events", days ?? "all"] as const
+export function calendarEventsQueryKey(
+  days?: number | null,
+  start?: string,
+) {
+  return ["calendar", "events", days ?? "all", start ?? ""] as const
 }
 
-export function useCalendarEvents(days?: number | null, enabled = true) {
+export function useCalendarEvents(
+  days?: number | null,
+  enabled = true,
+  start?: string,
+) {
   return useInfiniteQuery({
-    queryKey: calendarEventsQueryKey(days),
+    queryKey: calendarEventsQueryKey(days, start),
     queryFn: ({ pageParam }) =>
-      fetchCalendarEvents({ days, pageToken: pageParam as string | undefined }),
+      fetchCalendarEvents({
+        days,
+        start,
+        pageToken: pageParam as string | undefined,
+      }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextPageToken ?? undefined,
     enabled,
@@ -82,14 +106,14 @@ export function useCalendarEvents(days?: number | null, enabled = true) {
   })
 }
 
-export function useCreateCalendarEvent(days?: number | null) {
+export function useCreateCalendarEvent() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: createCalendarEvent,
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: calendarEventsQueryKey(days),
+        queryKey: ["calendar", "events"],
       })
     },
   })
