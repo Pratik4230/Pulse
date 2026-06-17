@@ -18,7 +18,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandShortcut,
 } from "@/components/ui/command"
 import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
@@ -74,28 +73,24 @@ export function AppShell({
         group: "Navigate",
         label: "Assistant",
         icon: Sparkles,
-        shortcut: "G A",
         onSelect: () => router.push("/pulse"),
       },
       {
         group: "Navigate",
         label: "Inbox",
         icon: Inbox,
-        shortcut: "G I",
         onSelect: () => router.push("/inbox"),
       },
       {
         group: "Navigate",
         label: "Calendar",
         icon: CalendarDays,
-        shortcut: "G C",
         onSelect: () => router.push("/calendar"),
       },
       {
         group: "Navigate",
         label: "Settings",
         icon: Settings,
-        shortcut: "G S",
         onSelect: () => router.push("/settings"),
       },
       ...(onNewChat
@@ -104,7 +99,6 @@ export function AppShell({
               group: "Actions",
               label: "New chat",
               icon: MessageSquarePlus,
-              shortcut: "N",
               onSelect: onNewChat,
             },
           ]
@@ -115,7 +109,6 @@ export function AppShell({
               group: "Actions",
               label: "Focus composer",
               icon: Sparkles,
-              shortcut: "/",
               onSelect: onFocusComposer,
             },
           ]
@@ -151,7 +144,7 @@ export function AppShell({
       />
       <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
         <Command>
-          <CommandInput placeholder="Type a command..." />
+          <CommandInput placeholder="Jump to inbox, calendar, pulse…" />
           <CommandList>
             <CommandEmpty>No commands found.</CommandEmpty>
             {Object.entries(grouped).map(([group, items]) => (
@@ -163,7 +156,6 @@ export function AppShell({
                   >
                     <item.icon className="size-4" />
                     <span>{item.label}</span>
-                    <CommandShortcut>{item.shortcut}</CommandShortcut>
                   </CommandItem>
                 ))}
               </CommandGroup>

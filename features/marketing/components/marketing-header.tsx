@@ -35,6 +35,9 @@ export function MarketingHeader({ className }: MarketingHeaderProps) {
           <a href="#features" className="transition-colors hover:text-foreground">
             Features
           </a>
+          <a href="#voice" className="transition-colors hover:text-foreground">
+            Voice
+          </a>
           <a href="#shortcuts" className="transition-colors hover:text-foreground">
             Shortcuts
           </a>

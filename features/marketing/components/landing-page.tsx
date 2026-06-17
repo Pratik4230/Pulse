@@ -7,7 +7,9 @@ import {
   Bot,
   CalendarDays,
   Keyboard,
+  Languages,
   Mail,
+  Mic,
   Radio,
   Zap,
 } from "lucide-react"
@@ -15,6 +17,8 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
+import { LANDING_SHORTCUT_GROUPS } from "@/lib/app-shortcuts"
+import { STARTER_LANGUAGES } from "@/features/pulse/lib/starter-suggestions"
 import { HeroMockup } from "@/features/marketing/components/hero-mockup"
 import { MarketingFooter } from "@/features/marketing/components/marketing-footer"
 import { MarketingHeader } from "@/features/marketing/components/marketing-header"
@@ -26,7 +30,7 @@ const FEATURES = [
     icon: Mail,
     title: "Inbox at the speed of thought",
     description:
-      "A dense, keyboard-navigable Gmail view. J/K through threads, open instantly, enrich metadata on demand.",
+      "A dense, keyboard-navigable Gmail view. Move with arrow keys, focus search with /, and enrich metadata on demand.",
     className: "md:col-span-2",
     accent: "from-warm/20 to-transparent",
   },
@@ -42,7 +46,7 @@ const FEATURES = [
     icon: Bot,
     title: "Pulse AI",
     description:
-      "Ask about your inbox, draft replies, schedule meetings, grounded in your real Gmail and Calendar data.",
+      "Type or talk to Pulse AI. Ask about your inbox, draft replies, and schedule meetings in your language.",
     className: "md:col-span-1",
     accent: "from-accent to-transparent",
   },
@@ -56,14 +60,7 @@ const FEATURES = [
   },
 ]
 
-const SHORTCUTS = [
-  { keys: ["J", "K"], label: "Move between messages" },
-  { keys: ["↵"], label: "Open thread" },
-  { keys: ["Esc"], label: "Back to list" },
-  { keys: ["⌘", "K"], label: "Command palette" },
-  { keys: ["G", "I"], label: "Go to inbox" },
-  { keys: ["G", "C"], label: "Go to calendar" },
-]
+const SHORTCUTS = LANDING_SHORTCUT_GROUPS
 
 function FadeIn({
   children,
@@ -90,7 +87,10 @@ function FadeIn({
 export function LandingPage() {
   return (
     <div className="relative min-h-svh overflow-x-clip">
-      <div aria-hidden className="marketing-mesh pointer-events-none fixed inset-0 -z-10" />
+      <div
+        aria-hidden
+        className="marketing-mesh pointer-events-none fixed inset-0 -z-10"
+      />
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,oklch(0.98_0.03_78),transparent_55%)]"
@@ -99,17 +99,27 @@ export function LandingPage() {
       <MarketingHeader />
 
       <main>
-        <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-16 lg:grid-cols-2 lg:gap-16 lg:pt-24">
+        <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 pt-16 pb-20 lg:grid-cols-2 lg:gap-16 lg:pt-24">
           <div className="space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <Badge variant="secondary" className="gap-1.5 px-3 py-1">
-                <Zap className="size-3 text-warm-muted" />
-                Keyboard-first workspace
-              </Badge>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="gap-1.5 px-3 py-1">
+                  <Zap className="size-3 text-warm-muted" />
+                  Keyboard-first workspace
+                </Badge>
+                <Badge variant="outline" className="gap-1.5 px-3 py-1">
+                  <Mic className="size-3 text-warm-muted" />
+                  Voice input
+                </Badge>
+                <Badge variant="outline" className="gap-1.5 px-3 py-1">
+                  <Languages className="size-3 text-warm-muted" />
+                  {STARTER_LANGUAGES.length} languages
+                </Badge>
+              </div>
             </motion.div>
 
             <motion.div
@@ -118,15 +128,16 @@ export function LandingPage() {
               transition={{ duration: 0.6, delay: 0.05 }}
               className="space-y-5"
             >
-              <h1 className="text-balance font-heading text-4xl font-semibold tracking-tight sm:text-5xl lg:text-[3.25rem] lg:leading-[1.08]">
+              <h1 className="font-heading text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-[3.25rem] lg:leading-[1.08]">
                 Email &amp; calendar,
-                <span className="block bg-gradient-to-r from-foreground via-foreground to-warm-muted bg-clip-text text-transparent">
+                <span className="block bg-linear-to-r from-foreground via-foreground to-warm-muted bg-clip-text text-transparent">
                   without the friction.
                 </span>
               </h1>
-              <p className="max-w-lg text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-                {SITE_TAGLINE} Navigate with shortcuts, ask Pulse AI when you
-                need a hand, and watch your inbox update in real time.
+              <p className="max-w-lg text-base leading-relaxed text-pretty text-muted-foreground sm:text-lg">
+                {SITE_TAGLINE} Navigate with shortcuts, speak to Pulse AI in
+                English or Indian languages, and watch your inbox update in real
+                time.
               </p>
             </motion.div>
 
@@ -136,7 +147,11 @@ export function LandingPage() {
               transition={{ duration: 0.5, delay: 0.12 }}
               className="flex flex-wrap items-center gap-3"
             >
-              <Button asChild size="lg" className="h-11 gap-2 px-6 shadow-elevated-lg">
+              <Button
+                asChild
+                size="lg"
+                className="shadow-elevated-lg h-11 gap-2 px-6"
+              >
                 <Link href="/signup">
                   Start for free
                   <ArrowRight className="size-4" />
@@ -153,7 +168,8 @@ export function LandingPage() {
               transition={{ delay: 0.25 }}
               className="text-xs text-muted-foreground"
             >
-              Connect Gmail &amp; Google Calendar in one click. Your data stays yours.
+              Connect Gmail &amp; Google Calendar in one click. Your data stays
+              yours.
             </motion.p>
           </div>
 
@@ -176,15 +192,15 @@ export function LandingPage() {
                 key={feature.title}
                 delay={index * 0.06}
                 className={cn(
-                  "group relative overflow-hidden rounded-2xl border border-border/70 bg-card/80 p-6 shadow-elevated backdrop-blur-sm transition-transform hover:-translate-y-0.5",
-                  feature.className,
+                  "group shadow-elevated relative overflow-hidden rounded-2xl border border-border/70 bg-card/80 p-6 backdrop-blur-sm transition-transform hover:-translate-y-0.5",
+                  feature.className
                 )}
               >
                 <div
                   aria-hidden
                   className={cn(
-                    "absolute inset-0 bg-gradient-to-br opacity-60 transition-opacity group-hover:opacity-100",
-                    feature.accent,
+                    "absolute inset-0 bg-linear-to-br opacity-60 transition-opacity group-hover:opacity-100",
+                    feature.accent
                   )}
                 />
                 <div className="relative space-y-3">
@@ -202,39 +218,140 @@ export function LandingPage() {
         </section>
 
         <section
-          id="shortcuts"
+          id="voice"
           className="border-y border-border/60 bg-card/30 py-20"
         >
+          <div className="mx-auto max-w-6xl px-6">
+            <FadeIn className="mb-12 max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs text-muted-foreground">
+                <Mic className="size-3.5" />
+                Voice + multilingual AI
+              </div>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+                Talk to your inbox in the language you think in
+              </h2>
+              <p className="mt-4 text-muted-foreground">
+                Tap the mic in Pulse AI and speak naturally. Sarvam Saaras
+                transcribes your voice, auto-detects the language, and handles
+                code-mixed speech like Hinglish. Type works too.
+              </p>
+            </FadeIn>
+
+            <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr] lg:items-start">
+              <FadeIn delay={0.05}>
+                <div className="shadow-elevated rounded-2xl border border-border/70 bg-card/80 p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex size-12 items-center justify-center rounded-full border border-border/60 bg-background">
+                      <Mic className="size-5 text-foreground" />
+                      <span
+                        aria-hidden
+                        className="absolute inset-0 animate-ping rounded-full border border-warm/40 opacity-40"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Listening...</p>
+                      <p className="text-xs text-muted-foreground">
+                        Up to 27 seconds per message
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 space-y-3 rounded-xl border border-border/60 bg-muted/30 p-4">
+                    <p className="text-[11px] font-medium tracking-wide text-warm-muted uppercase">
+                      Example (Hindi)
+                    </p>
+                    <p className="text-sm leading-relaxed text-foreground">
+                      मेरे 5 सबसे हाल के unread emails दिखाओ। हर email के लिए
+                      sender, subject और एक लाइन summary दो।
+                    </p>
+                  </div>
+
+                  <div className="mt-4 space-y-3 rounded-xl border border-border/60 bg-muted/30 p-4">
+                    <p className="text-[11px] font-medium tracking-wide text-warm-muted uppercase">
+                      Example (English)
+                    </p>
+                    <p className="text-sm leading-relaxed text-foreground">
+                      Schedule a 30-minute interview with alex@company.com on
+                      Friday at 10am and send a confirmation email.
+                    </p>
+                  </div>
+                </div>
+              </FadeIn>
+
+              <FadeIn delay={0.1}>
+                <div className="shadow-elevated rounded-2xl border border-border/70 bg-card/80 p-6">
+                  <div className="flex items-center gap-2">
+                    <Languages className="size-4 text-warm-muted" />
+                    <h3 className="text-sm font-semibold">
+                      Supported languages
+                    </h3>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Pulse AI starter prompts and voice input work across these
+                    languages. Ask about Gmail, Calendar, or both.
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {STARTER_LANGUAGES.map((language) => (
+                      <Badge
+                        key={language}
+                        variant="secondary"
+                        className="px-2.5 py-1 text-xs"
+                      >
+                        {language}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
+                    Same languages for typed prompts and voice. Mix languages in
+                    one sentence when that is how you naturally speak.
+                  </p>
+                </div>
+              </FadeIn>
+            </div>
+          </div>
+        </section>
+
+        <section id="shortcuts" className="py-20">
           <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-2">
             <FadeIn>
               <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs text-muted-foreground">
                 <Keyboard className="size-3.5" />
-                Vim-inspired navigation
+                Keyboard-driven navigation
               </div>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
                 Your hands never leave the keyboard
               </h2>
               <p className="mt-4 max-w-md text-muted-foreground">
-                Pulse is designed like the tools power users love: fast list
-                traversal, predictable shortcuts, and zero modal maze.
+                Arrow keys move through your inbox. Slash focuses search. Cmd+K
+                opens the command palette to jump to Calendar, Pulse AI, or
+                Settings. Ctrl+K and Ctrl+B on Windows.
               </p>
             </FadeIn>
 
             <FadeIn delay={0.1}>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {SHORTCUTS.map((shortcut) => (
-                  <div
-                    key={shortcut.label}
-                    className="flex items-center justify-between rounded-xl border border-border/60 bg-background/70 px-4 py-3 shadow-elevated"
-                  >
-                    <span className="text-sm text-muted-foreground">
-                      {shortcut.label}
-                    </span>
-                    <KbdGroup>
-                      {shortcut.keys.map((key) => (
-                        <Kbd key={key}>{key}</Kbd>
+              <div className="space-y-6">
+                {SHORTCUTS.map((group) => (
+                  <div key={group.id}>
+                    <p className="mb-2 text-xs font-semibold tracking-wider text-warm-muted uppercase">
+                      {group.title}
+                    </p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {group.shortcuts.map((shortcut) => (
+                        <div
+                          key={`${group.id}-${shortcut.label}`}
+                          className="shadow-elevated flex items-center justify-between rounded-xl border border-border/60 bg-background/70 px-4 py-3"
+                        >
+                          <span className="text-sm text-muted-foreground">
+                            {shortcut.label}
+                          </span>
+                          <KbdGroup>
+                            {shortcut.keys.map((key) => (
+                              <Kbd key={key}>{key}</Kbd>
+                            ))}
+                          </KbdGroup>
+                        </div>
                       ))}
-                    </KbdGroup>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -244,10 +361,10 @@ export function LandingPage() {
 
         <section id="sync" className="mx-auto max-w-6xl px-6 py-20">
           <FadeIn>
-            <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-card via-card to-accent/30 p-8 shadow-elevated-lg sm:p-12">
+            <div className="shadow-elevated-lg relative overflow-hidden rounded-3xl border border-border/70 bg-linear-to-br from-card via-card to-accent/30 p-8 sm:p-12">
               <div
                 aria-hidden
-                className="absolute -right-20 -top-20 size-64 rounded-full bg-warm/20 blur-3xl"
+                className="absolute -top-20 -right-20 size-64 rounded-full bg-warm/20 blur-3xl"
               />
               <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
                 <div className="space-y-4">
@@ -263,7 +380,9 @@ export function LandingPage() {
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
                   <div className="rounded-2xl border border-border/60 bg-background/80 px-5 py-4">
-                    <p className="text-2xl font-semibold tabular-nums">&lt;15s</p>
+                    <p className="text-2xl font-semibold tabular-nums">
+                      &lt;15s
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Typical inbox update latency
                     </p>
@@ -280,9 +399,9 @@ export function LandingPage() {
           </FadeIn>
         </section>
 
-        <section className="mx-auto max-w-6xl px-6 pb-24 pt-4">
+        <section className="mx-auto max-w-6xl px-6 pt-4 pb-24">
           <FadeIn>
-            <div className="flex flex-col items-center gap-6 rounded-3xl border border-border/70 bg-primary px-6 py-14 text-center text-primary-foreground shadow-elevated-lg sm:px-12">
+            <div className="shadow-elevated-lg flex flex-col items-center gap-6 rounded-3xl border border-border/70 bg-primary px-6 py-14 text-center text-primary-foreground sm:px-12">
               <h2 className="max-w-xl text-3xl font-semibold tracking-tight sm:text-4xl">
                 Ready to move at the speed of your thoughts?
               </h2>
