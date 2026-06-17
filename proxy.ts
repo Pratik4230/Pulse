@@ -10,6 +10,8 @@ const PUBLIC_PATHS = [
   "/reset-password",
   "/verify-email",
   "/onboarding",
+  "/privacy",
+  "/terms",
 ]
 
 function isPublicPath(pathname: string) {

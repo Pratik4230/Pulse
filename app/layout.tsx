@@ -1,16 +1,24 @@
-import { Geist, Geist_Mono, Inter } from "next/font/google"
+import { Geist_Mono, Inter } from "next/font/google"
 import type { Metadata } from "next"
 
 import "./globals.css"
 import { PULSE_ICON_PATH } from "@/components/brand/pulse-logo"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
-  title: "Pulse",
-  description:
-    "Your keyboard-first command center for email and calendar.",
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_NAME,
+    description: SITE_TAGLINE,
+    type: "website",
+  },
   icons: {
     icon: PULSE_ICON_PATH,
     apple: PULSE_ICON_PATH,
