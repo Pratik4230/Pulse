@@ -110,7 +110,7 @@ function LoginFormContent() {
           noValidate
           onSubmit={(event) => {
             event.preventDefault()
-            form.handleSubmit()
+            void form.handleSubmit()
           }}
         >
           <FieldGroup>
@@ -181,20 +181,21 @@ function LoginFormContent() {
               }}
             </form.Field>
           </FieldGroup>
+          <Button
+            type="button"
+            data-form-submit="true"
+            className="mt-6 w-full"
+            disabled={form.state.isSubmitting}
+            onClick={() => void form.handleSubmit()}
+          >
+            Sign in
+            <Kbd data-icon="inline-end" className="translate-x-0.5">
+              ⏎
+            </Kbd>
+          </Button>
         </form>
       </CardContent>
       <CardFooter className="flex flex-col gap-4 border-t">
-        <Button
-          type="submit"
-          form={FORM_ID}
-          className="w-full"
-          disabled={form.state.isSubmitting}
-        >
-          Sign in
-          <Kbd data-icon="inline-end" className="translate-x-0.5">
-            ⏎
-          </Kbd>
-        </Button>
         <p className="text-center text-sm text-muted-foreground">
           No account?{" "}
           <Link

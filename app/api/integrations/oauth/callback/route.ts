@@ -6,7 +6,9 @@ import {
   getAppBaseUrl,
   getCorsairOAuthRedirectUri,
 } from "@/features/integrations/core/lib/oauth"
+import type { IntegrationId } from "@/features/integrations/core/types"
 import { invalidateIntegrationStatusCache } from "@/features/integrations/core/server/tenant"
+import { registerIntegrationWebhooks } from "@/features/integrations/core/server/webhook-subscriptions"
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
@@ -33,6 +35,13 @@ export async function GET(request: Request) {
     })
 
     invalidateIntegrationStatusCache(result.tenantId)
+
+    void registerIntegrationWebhooks(
+      result.tenantId,
+      result.plugin as IntegrationId,
+    ).catch((error) => {
+      console.error("[webhooks] Failed to register push watches:", error)
+    })
 
     const successUrl = new URL("/settings/integrations", getAppBaseUrl())
     successUrl.searchParams.set("connected", result.plugin)

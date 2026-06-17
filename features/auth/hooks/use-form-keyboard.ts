@@ -28,9 +28,13 @@ export function useFormKeyboard({ formId, onEscape }: UseFormKeyboardOptions) {
 
       if (target.tagName === "TEXTAREA") return
 
-      const submitButton = form.querySelector<HTMLButtonElement>(
-        'button[type="submit"]:not([disabled])',
-      )
+      const submitButton =
+        form.querySelector<HTMLButtonElement>(
+          'button[type="button"][data-form-submit="true"]:not([disabled])',
+        ) ??
+        document.querySelector<HTMLButtonElement>(
+          `button[type="button"][data-form-submit="true"][form="${formId}"]:not([disabled])`,
+        )
       if (!submitButton) return
 
       event.preventDefault()

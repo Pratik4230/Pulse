@@ -99,7 +99,7 @@ export function SignupForm() {
           noValidate
           onSubmit={(event) => {
             event.preventDefault()
-            form.handleSubmit()
+            void form.handleSubmit()
           }}
         >
           <FieldGroup>
@@ -253,20 +253,21 @@ export function SignupForm() {
               }}
             </form.Field>
           </FieldGroup>
+          <Button
+            type="button"
+            data-form-submit="true"
+            className="mt-6 w-full"
+            disabled={form.state.isSubmitting}
+            onClick={() => void form.handleSubmit()}
+          >
+            Create account
+            <Kbd data-icon="inline-end" className="translate-x-0.5">
+              ⏎
+            </Kbd>
+          </Button>
         </form>
       </CardContent>
       <CardFooter className="flex flex-col gap-4 border-t">
-        <Button
-          type="submit"
-          form={FORM_ID}
-          className="w-full"
-          disabled={form.state.isSubmitting}
-        >
-          Create account
-          <Kbd data-icon="inline-end" className="translate-x-0.5">
-            ⏎
-          </Kbd>
-        </Button>
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link
