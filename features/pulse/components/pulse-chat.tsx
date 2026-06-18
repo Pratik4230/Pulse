@@ -25,7 +25,9 @@ import { Shimmer } from "@/components/ai-elements/shimmer"
 import { cn } from "@/lib/utils"
 
 import { fetchOlderChatMessages } from "@/features/pulse/hooks/use-chat-messages"
+import { useAiUsage } from "@/features/pulse/hooks/use-ai-usage"
 import { useTranscribeAudio } from "@/features/pulse/hooks/use-transcribe-audio"
+import { UpgradeCta } from "@/features/billing/components/upgrade-cta"
 import {
   CHAT_MAX_MESSAGE_CHARS,
   MAX_VOICE_RECORDING_MS,
@@ -77,6 +79,7 @@ export function PulseChat({
   const [loadingOlder, setLoadingOlder] = useState(false)
 
   const transcribeAudio = useTranscribeAudio()
+  const { data: aiUsage, refetch: refetchAiUsage } = useAiUsage()
 
   const { messages, sendMessage, status, stop, error, setMessages } = useChat({
     id: chatInstanceKey,
@@ -87,6 +90,19 @@ export function PulseChat({
       if (savedSessionId) {
         onConversationSaved?.(savedSessionId)
       }
+      void refetchAiUsage()
+    },
+    onError: (chatError) => {
+      if (
+        chatError.message.includes("Pulse AI messages per day") ||
+        chatError.message.includes("AI_DAILY_LIMIT")
+      ) {
+        toast.error(chatError.message)
+        void refetchAiUsage()
+        return
+      }
+
+      toast.error(chatError.message || "Could not send message")
     },
   })
 
@@ -216,6 +232,19 @@ export function PulseChat({
     return () => window.removeEventListener("keydown", handleKeyboardShortcuts)
   }, [status, stop])
 
+  const showUpgradeCta =
+    aiUsage &&
+    !aiUsage.isUnlimited &&
+    (aiUsage.remaining === 0 ||
+      Boolean(error?.message.includes("Pulse AI messages per day")))
+
+  const showUpgradeHint =
+    aiUsage &&
+    !aiUsage.isUnlimited &&
+    aiUsage.remaining > 0 &&
+    aiUsage.remaining <= 2 &&
+    !showUpgradeCta
+
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden">
       <div
@@ -269,7 +298,25 @@ export function PulseChat({
       </Conversation>
 
       <div className="relative shrink-0 border-t border-border/80 bg-card/90 px-4 py-4 backdrop-blur-xl md:px-6">
-        <div className="mx-auto w-full max-w-3xl">
+        <div className="mx-auto w-full max-w-3xl space-y-3">
+          {showUpgradeCta ? (
+            <UpgradeCta
+              compact
+              title={
+                aiUsage?.remaining === 0
+                  ? "Daily AI limit reached"
+                  : "Upgrade to Pulse Pro"
+              }
+              description="Get unlimited Pulse AI and voice. Inbox and calendar stay free."
+            />
+          ) : showUpgradeHint ? (
+            <UpgradeCta
+              compact
+              title={`${aiUsage.remaining} AI message${aiUsage.remaining === 1 ? "" : "s"} left today`}
+              description="Upgrade to Pro for unlimited Pulse AI and voice."
+            />
+          ) : null}
+
           <PromptInput
             onSubmit={handleSubmit}
             className={cn(
@@ -286,16 +333,23 @@ export function PulseChat({
               />
             </PromptInputBody>
             <PromptInputFooter className="border-t border-border/60 bg-muted/20 px-3 py-2">
-              <SpeechInput
-                aria-label="Use microphone"
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-                maxDurationMs={MAX_VOICE_RECORDING_MS}
-                onMaxDurationReached={handleMaxRecordingDuration}
-                onAudioRecorded={handleAudioRecorded}
-                onTranscriptionChange={handleTranscriptionChange}
-              />
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <SpeechInput
+                  aria-label="Use microphone"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground hover:text-foreground"
+                  maxDurationMs={MAX_VOICE_RECORDING_MS}
+                  onMaxDurationReached={handleMaxRecordingDuration}
+                  onAudioRecorded={handleAudioRecorded}
+                  onTranscriptionChange={handleTranscriptionChange}
+                />
+                {aiUsage && !aiUsage.isUnlimited ? (
+                  <p className="truncate text-xs text-muted-foreground">
+                    {aiUsage.remaining} of {aiUsage.limit} messages left today
+                  </p>
+                ) : null}
+              </div>
               <div className="flex items-center gap-1">
                 <PromptInputSubmit
                   onStop={stop}

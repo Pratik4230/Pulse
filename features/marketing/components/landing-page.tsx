@@ -22,6 +22,7 @@ import { STARTER_LANGUAGES } from "@/features/pulse/lib/starter-suggestions"
 import { HeroMockup } from "@/features/marketing/components/hero-mockup"
 import { MarketingFooter } from "@/features/marketing/components/marketing-footer"
 import { MarketingHeader } from "@/features/marketing/components/marketing-header"
+import { PricingSection } from "@/features/marketing/components/pricing-section"
 import { SITE_TAGLINE } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
@@ -310,6 +311,8 @@ export function LandingPage() {
             </div>
           </div>
         </section>
+
+        <PricingSection />
 
         <section id="shortcuts" className="py-20">
           <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-2">

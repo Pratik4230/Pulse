@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Globe, Plug } from "lucide-react"
+import { CreditCard, Globe, Plug } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AppShell } from "@/features/pulse/components/app-shell"
@@ -19,6 +19,21 @@ export default function SettingsPage() {
             >
               <Plug className="size-4" />
               Manage connected apps
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Billing</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link
+              href="/settings/billing"
+              className="inline-flex items-center gap-2 text-sm text-foreground underline-offset-4 hover:underline"
+            >
+              <CreditCard className="size-4" />
+              Plans, usage, and subscription
             </Link>
           </CardContent>
         </Card>

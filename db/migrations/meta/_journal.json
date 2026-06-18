@@ -22,6 +22,27 @@
       "when": 1781300000000,
       "tag": "0003_chat_persistence",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781400000000,
+      "tag": "0004_user_plan",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781500000000,
+      "tag": "0005_dodo_customer",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781600000000,
+      "tag": "0006_ai_daily_usage",
+      "breakpoints": true
     }
   ]
 }

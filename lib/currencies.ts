@@ -1,48 +1,65 @@
+/**
+ * Locale + billing currencies aligned with Dodo Payments adaptive currency support
+ * (June 2026). Each entry maps one ISO 3166-1 alpha-2 country to its local currency.
+ * @see https://docs.dodopayments.com/features/adaptive-currency
+ */
+
+export type CurrencyEntry = {
+  code: string
+  symbol: string
+  /** Shown in country pickers */
+  name: string
+  country: string
+  flag: string
+}
+
 export const CURRENCIES = [
-  { code: "INR", symbol: "₹", name: "Indian Rupee", country: "IN", flag: "🇮🇳" },
-  { code: "USD", symbol: "$", name: "US Dollar", country: "US", flag: "🇺🇸" },
-  { code: "EUR", symbol: "€", name: "Euro", country: "EU", flag: "🇪🇺" },
-  { code: "GBP", symbol: "£", name: "British Pound", country: "GB", flag: "🇬🇧" },
-  { code: "AED", symbol: "د.إ", name: "UAE Dirham", country: "AE", flag: "🇦🇪" },
-  { code: "SGD", symbol: "S$", name: "Singapore Dollar", country: "SG", flag: "🇸🇬" },
-  { code: "CAD", symbol: "CA$", name: "Canadian Dollar", country: "CA", flag: "🇨🇦" },
-  { code: "AUD", symbol: "A$", name: "Australian Dollar", country: "AU", flag: "🇦🇺" },
-  { code: "JPY", symbol: "¥", name: "Japanese Yen", country: "JP", flag: "🇯🇵" },
-  { code: "CNY", symbol: "¥", name: "Chinese Yuan", country: "CN", flag: "🇨🇳" },
-  { code: "CHF", symbol: "Fr", name: "Swiss Franc", country: "CH", flag: "🇨🇭" },
-  { code: "NZD", symbol: "NZ$", name: "New Zealand Dollar", country: "NZ", flag: "🇳🇿" },
-  { code: "HKD", symbol: "HK$", name: "Hong Kong Dollar", country: "HK", flag: "🇭🇰" },
-  { code: "KRW", symbol: "₩", name: "South Korean Won", country: "KR", flag: "🇰🇷" },
-  { code: "MYR", symbol: "RM", name: "Malaysian Ringgit", country: "MY", flag: "🇲🇾" },
-  { code: "THB", symbol: "฿", name: "Thai Baht", country: "TH", flag: "🇹🇭" },
-  { code: "IDR", symbol: "Rp", name: "Indonesian Rupiah", country: "ID", flag: "🇮🇩" },
-  { code: "PHP", symbol: "₱", name: "Philippine Peso", country: "PH", flag: "🇵🇭" },
-  { code: "VND", symbol: "₫", name: "Vietnamese Dong", country: "VN", flag: "🇻🇳" },
-  { code: "TWD", symbol: "NT$", name: "Taiwan Dollar", country: "TW", flag: "🇹🇼" },
-  { code: "SAR", symbol: "ر.س", name: "Saudi Riyal", country: "SA", flag: "🇸🇦" },
-  { code: "QAR", symbol: "ر.ق", name: "Qatari Riyal", country: "QA", flag: "🇶🇦" },
-  { code: "KWD", symbol: "د.ك", name: "Kuwaiti Dinar", country: "KW", flag: "🇰🇼" },
-  { code: "BHD", symbol: ".د.ب", name: "Bahraini Dinar", country: "BH", flag: "🇧🇭" },
-  { code: "OMR", symbol: "ر.ع.", name: "Omani Rial", country: "OM", flag: "🇴🇲" },
-  { code: "BDT", symbol: "৳", name: "Bangladeshi Taka", country: "BD", flag: "🇧🇩" },
-  { code: "NPR", symbol: "Rs", name: "Nepalese Rupee", country: "NP", flag: "🇳🇵" },
-  { code: "LKR", symbol: "Rs", name: "Sri Lankan Rupee", country: "LK", flag: "🇱🇰" },
-  { code: "PKR", symbol: "Rs", name: "Pakistani Rupee", country: "PK", flag: "🇵🇰" },
-  { code: "MMK", symbol: "K", name: "Myanmar Kyat", country: "MM", flag: "🇲🇲" },
-  { code: "BRL", symbol: "R$", name: "Brazilian Real", country: "BR", flag: "🇧🇷" },
-  { code: "MXN", symbol: "MX$", name: "Mexican Peso", country: "MX", flag: "🇲🇽" },
-  { code: "SEK", symbol: "kr", name: "Swedish Krona", country: "SE", flag: "🇸🇪" },
-  { code: "NOK", symbol: "kr", name: "Norwegian Krone", country: "NO", flag: "🇳🇴" },
-  { code: "DKK", symbol: "kr", name: "Danish Krone", country: "DK", flag: "🇩🇰" },
-  { code: "PLN", symbol: "zł", name: "Polish Zloty", country: "PL", flag: "🇵🇱" },
-  { code: "TRY", symbol: "₺", name: "Turkish Lira", country: "TR", flag: "🇹🇷" },
-  { code: "ZAR", symbol: "R", name: "South African Rand", country: "ZA", flag: "🇿🇦" },
-  { code: "NGN", symbol: "₦", name: "Nigerian Naira", country: "NG", flag: "🇳🇬" },
-  { code: "EGP", symbol: "E£", name: "Egyptian Pound", country: "EG", flag: "🇪🇬" },
-  { code: "KES", symbol: "KSh", name: "Kenyan Shilling", country: "KE", flag: "🇰🇪" },
-  { code: "GHS", symbol: "₵", name: "Ghanaian Cedi", country: "GH", flag: "🇬🇭" },
-  { code: "ILS", symbol: "₪", name: "Israeli Shekel", country: "IL", flag: "🇮🇱" },
-] as const
+  { code: "INR", symbol: "₹", name: "India", country: "IN", flag: "🇮🇳" },
+  { code: "USD", symbol: "$", name: "United States", country: "US", flag: "🇺🇸" },
+  { code: "GBP", symbol: "£", name: "United Kingdom", country: "GB", flag: "🇬🇧" },
+  { code: "EUR", symbol: "€", name: "Germany", country: "DE", flag: "🇩🇪" },
+  { code: "EUR", symbol: "€", name: "France", country: "FR", flag: "🇫🇷" },
+  { code: "EUR", symbol: "€", name: "Italy", country: "IT", flag: "🇮🇹" },
+  { code: "EUR", symbol: "€", name: "Spain", country: "ES", flag: "🇪🇸" },
+  { code: "EUR", symbol: "€", name: "Netherlands", country: "NL", flag: "🇳🇱" },
+  { code: "EUR", symbol: "€", name: "Ireland", country: "IE", flag: "🇮🇪" },
+  { code: "EUR", symbol: "€", name: "Austria", country: "AT", flag: "🇦🇹" },
+  { code: "EUR", symbol: "€", name: "Belgium", country: "BE", flag: "🇧🇪" },
+  { code: "EUR", symbol: "€", name: "Portugal", country: "PT", flag: "🇵🇹" },
+  { code: "EUR", symbol: "€", name: "Finland", country: "FI", flag: "🇫🇮" },
+  { code: "AED", symbol: "د.إ", name: "United Arab Emirates", country: "AE", flag: "🇦🇪" },
+  { code: "SGD", symbol: "S$", name: "Singapore", country: "SG", flag: "🇸🇬" },
+  { code: "CAD", symbol: "CA$", name: "Canada", country: "CA", flag: "🇨🇦" },
+  { code: "AUD", symbol: "A$", name: "Australia", country: "AU", flag: "🇦🇺" },
+  { code: "JPY", symbol: "¥", name: "Japan", country: "JP", flag: "🇯🇵" },
+  { code: "CNY", symbol: "¥", name: "China", country: "CN", flag: "🇨🇳" },
+  { code: "CHF", symbol: "Fr", name: "Switzerland", country: "CH", flag: "🇨🇭" },
+  { code: "NZD", symbol: "NZ$", name: "New Zealand", country: "NZ", flag: "🇳🇿" },
+  { code: "HKD", symbol: "HK$", name: "Hong Kong", country: "HK", flag: "🇭🇰" },
+  { code: "KRW", symbol: "₩", name: "South Korea", country: "KR", flag: "🇰🇷" },
+  { code: "MYR", symbol: "RM", name: "Malaysia", country: "MY", flag: "🇲🇾" },
+  { code: "THB", symbol: "฿", name: "Thailand", country: "TH", flag: "🇹🇭" },
+  { code: "IDR", symbol: "Rp", name: "Indonesia", country: "ID", flag: "🇮🇩" },
+  { code: "PHP", symbol: "₱", name: "Philippines", country: "PH", flag: "🇵🇭" },
+  { code: "VND", symbol: "₫", name: "Vietnam", country: "VN", flag: "🇻🇳" },
+  { code: "TWD", symbol: "NT$", name: "Taiwan", country: "TW", flag: "🇹🇼" },
+  { code: "SAR", symbol: "ر.س", name: "Saudi Arabia", country: "SA", flag: "🇸🇦" },
+  { code: "QAR", symbol: "ر.ق", name: "Qatar", country: "QA", flag: "🇶🇦" },
+  { code: "BDT", symbol: "৳", name: "Bangladesh", country: "BD", flag: "🇧🇩" },
+  { code: "NPR", symbol: "Rs", name: "Nepal", country: "NP", flag: "🇳🇵" },
+  { code: "LKR", symbol: "Rs", name: "Sri Lanka", country: "LK", flag: "🇱🇰" },
+  { code: "BRL", symbol: "R$", name: "Brazil", country: "BR", flag: "🇧🇷" },
+  { code: "MXN", symbol: "MX$", name: "Mexico", country: "MX", flag: "🇲🇽" },
+  { code: "SEK", symbol: "kr", name: "Sweden", country: "SE", flag: "🇸🇪" },
+  { code: "NOK", symbol: "kr", name: "Norway", country: "NO", flag: "🇳🇴" },
+  { code: "DKK", symbol: "kr", name: "Denmark", country: "DK", flag: "🇩🇰" },
+  { code: "PLN", symbol: "zł", name: "Poland", country: "PL", flag: "🇵🇱" },
+  { code: "TRY", symbol: "₺", name: "Turkey", country: "TR", flag: "🇹🇷" },
+  { code: "ZAR", symbol: "R", name: "South Africa", country: "ZA", flag: "🇿🇦" },
+  { code: "NGN", symbol: "₦", name: "Nigeria", country: "NG", flag: "🇳🇬" },
+  { code: "EGP", symbol: "E£", name: "Egypt", country: "EG", flag: "🇪🇬" },
+  { code: "ILS", symbol: "₪", name: "Israel", country: "IL", flag: "🇮🇱" },
+] as const satisfies readonly CurrencyEntry[]
 
 export type CurrencyCode = (typeof CURRENCIES)[number]["code"]
 export type CountryCode = (typeof CURRENCIES)[number]["country"]
@@ -52,17 +69,83 @@ export const DEFAULT_COUNTRY = "IN"
 
 export const COUNTRY_CODES: string[] = CURRENCIES.map((entry) => entry.country)
 
+const DODO_SUPPORTED_CURRENCY_CODES = new Set<string>([
+  "AED",
+  "AUD",
+  "BDT",
+  "BRL",
+  "CAD",
+  "CHF",
+  "CNY",
+  "DKK",
+  "EGP",
+  "EUR",
+  "GBP",
+  "HKD",
+  "IDR",
+  "ILS",
+  "INR",
+  "JPY",
+  "KRW",
+  "LKR",
+  "MXN",
+  "MYR",
+  "NGN",
+  "NOK",
+  "NPR",
+  "NZD",
+  "PHP",
+  "PLN",
+  "QAR",
+  "SAR",
+  "SEK",
+  "SGD",
+  "THB",
+  "TRY",
+  "TWD",
+  "USD",
+  "VND",
+  "ZAR",
+])
+
+export function isDodoSupportedCurrency(code: string) {
+  return DODO_SUPPORTED_CURRENCY_CODES.has(code.toUpperCase())
+}
+
 export function getCurrency(code: string) {
-  return CURRENCIES.find((entry) => entry.code === code) ?? CURRENCIES[0]
+  return (
+    CURRENCIES.find((entry) => entry.code === code.toUpperCase()) ?? CURRENCIES[0]
+  )
 }
 
 export function getCurrencyByCountry(country: string) {
   return (
-    CURRENCIES.find((entry) => entry.country === country) ?? CURRENCIES[0]
+    CURRENCIES.find((entry) => entry.country === country.toUpperCase()) ??
+    CURRENCIES[0]
   )
 }
 
 export function getCountryLabel(country: string) {
   const entry = getCurrencyByCountry(country)
   return `${entry.flag} ${entry.name}`
+}
+
+/** Format minor units (cents/paise) for display in the user's currency. */
+export function formatMoney(
+  amountMinor: number,
+  currencyCode: string,
+  locale = "en",
+) {
+  const currency = currencyCode.toUpperCase()
+  const zeroDecimal = new Set(["JPY", "KRW", "VND", "IDR"])
+
+  const amount = zeroDecimal.has(currency)
+    ? amountMinor
+    : amountMinor / 100
+
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: zeroDecimal.has(currency) ? 0 : 2,
+  }).format(amount)
 }

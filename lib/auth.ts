@@ -9,7 +9,10 @@ import { localeSchema } from "@/features/auth/validations"
 import { COUNTRY_CODES, getCurrencyByCountry } from "@/lib/currencies"
 import { sendEmail, sendOtpEmail } from "@/lib/email"
 import { getAuthTrustedOrigins } from "@/lib/auth-origins"
+import { createDodoPaymentsAuthPlugin } from "@/lib/billing/dodo-plugin"
 import { getDefaultTimezone, getTimezoneOptions } from "@/lib/timezones"
+
+const dodoPaymentsPlugin = createDodoPaymentsAuthPlugin()
 
 function normalizeLocaleFields<T extends Record<string, unknown>>(record: T) {
   const parsedLocale = localeSchema.safeParse({
@@ -67,6 +70,12 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      plan: {
+        type: "string",
+        required: false,
+        defaultValue: "free",
+        input: false,
+      },
     },
   },
   databaseHooks: {
@@ -116,6 +125,7 @@ export const auth = betterAuth({
         void sendOtpEmail({ to: email, otp, type })
       },
     }),
+    ...(dodoPaymentsPlugin ? [dodoPaymentsPlugin] : []),
     nextCookies(),
   ],
 })

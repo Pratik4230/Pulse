@@ -8,6 +8,11 @@ import {
 } from "ai"
 
 import { auth } from "@/lib/auth"
+import {
+  AI_DAILY_LIMIT_ERROR_CODE,
+  countNewUserTurns,
+  reserveDailyAiMessages,
+} from "@/lib/billing/ai-usage"
 import { getAppBaseUrl } from "@/features/integrations/core/lib/oauth"
 import {
   ensureCorsairTenant,
@@ -19,6 +24,7 @@ import {
 } from "@/features/pulse/server/ai"
 import {
   ensureChatSession,
+  getChatSessionForUser,
   resolveModelMessages,
   saveChatMessages,
 } from "@/features/pulse/server/chat-store"
@@ -62,6 +68,38 @@ export async function POST(req: Request) {
 
   const titleCandidate = latestUserText?.slice(0, 48)
 
+  const existingSession = await getChatSessionForUser(tenantId, sessionId)
+  const newUserTurns = countNewUserTurns(
+    messages,
+    existingSession?.messageCount ?? 0,
+  )
+
+  const locale = await getUserLocale(tenantId)
+  const plan =
+    typeof session.user.plan === "string" ? session.user.plan : "free"
+
+  if (newUserTurns > 0) {
+    const reservation = await reserveDailyAiMessages(
+      tenantId,
+      locale.timezone,
+      plan,
+      newUserTurns,
+    )
+
+    if (!reservation.ok) {
+      return Response.json(
+        {
+          error: `Free plan includes ${reservation.limit} Pulse AI messages per day. Upgrade to Pro for unlimited access.`,
+          code: AI_DAILY_LIMIT_ERROR_CODE,
+          used: reservation.used,
+          limit: reservation.limit,
+          remaining: reservation.remaining,
+        },
+        { status: 429 },
+      )
+    }
+  }
+
   await ensureChatSession(tenantId, sessionId, titleCandidate)
   await ensureCorsairTenant(tenantId)
   const integrations = await getIntegrationStatuses(tenantId)
@@ -73,7 +111,6 @@ export async function POST(req: Request) {
   let mcpClient: Awaited<ReturnType<typeof createVercelAiMcpClient>> | undefined
 
   try {
-    const locale = await getUserLocale(tenantId)
     const modelMessages = await resolveModelMessages(
       tenantId,
       sessionId,

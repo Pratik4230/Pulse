@@ -9,6 +9,8 @@ export const user = pgTable("user", {
   country: text("country"),
   currency: text("currency"),
   timezone: text("timezone"),
+  plan: text("plan").default("free").notNull(),
+  dodoCustomerId: text("dodo_customer_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

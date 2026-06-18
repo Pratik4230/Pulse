@@ -1,4 +1,5 @@
 import { emailOTPClient, inferAdditionalFields } from "better-auth/client/plugins"
+import { dodopaymentsClient } from "@dodopayments/better-auth/client"
 import { createAuthClient } from "better-auth/react"
 
 import type { auth } from "@/lib/auth"
@@ -13,7 +14,11 @@ function getAuthBaseUrl() {
 
 export const authClient = createAuthClient({
   baseURL: getAuthBaseUrl(),
-  plugins: [emailOTPClient(), inferAdditionalFields<typeof auth>()],
+  plugins: [
+    emailOTPClient(),
+    inferAdditionalFields<typeof auth>(),
+    dodopaymentsClient(),
+  ],
 })
 
 export const {
