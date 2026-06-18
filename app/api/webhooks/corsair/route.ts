@@ -1,10 +1,11 @@
 import { processWebhook } from "corsair"
-import { and, eq, inArray, isNotNull } from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server"
 
-import { db } from "@/db"
-import { corsairAccounts, corsairIntegrations } from "@/db/schema/corsair"
 import { corsair } from "@/features/integrations/core/corsair/corsair"
+import {
+  extractGmailPubSubEmail,
+  resolveWebhookTenantAttempts,
+} from "@/features/integrations/core/server/webhook-tenant"
 
 function headersFromRequest(request: NextRequest) {
   const headers: Record<string, string> = {}
@@ -18,8 +19,6 @@ async function bodyFromRequest(request: NextRequest) {
   const contentType = request.headers.get("content-type") ?? ""
 
   if (contentType.includes("application/json")) {
-    // Pub/Sub (and some webhook retries) can occasionally deliver an empty body
-    // with a JSON content-type. `request.json()` would throw "Unexpected end of JSON input".
     const text = await request.text()
     if (!text.trim()) return {}
     try {
@@ -30,24 +29,6 @@ async function bodyFromRequest(request: NextRequest) {
   }
 
   return request.text()
-}
-
-async function listWebhookTenantCandidates() {
-  const rows = await db
-    .select({ tenantId: corsairAccounts.tenantId })
-    .from(corsairAccounts)
-    .innerJoin(
-      corsairIntegrations,
-      eq(corsairAccounts.integrationId, corsairIntegrations.id),
-    )
-    .where(
-      and(
-        inArray(corsairIntegrations.name, ["gmail", "googlecalendar"]),
-        isNotNull(corsairAccounts.dek),
-      ),
-    )
-
-  return [...new Set(rows.map((row) => row.tenantId))]
 }
 
 async function processForTenant(
@@ -76,9 +57,22 @@ export async function POST(request: NextRequest) {
       : (rawBody as Record<string, unknown>)
   const requestedTenantId = new URL(request.url).searchParams.get("tenantId")
 
-  const attempts = requestedTenantId
-    ? [requestedTenantId]
-    : await listWebhookTenantCandidates()
+  const attempts = await resolveWebhookTenantAttempts(body, requestedTenantId)
+
+  if (attempts.length === 0) {
+    const gmailEmail = extractGmailPubSubEmail(body)
+    if (gmailEmail) {
+      // Ack Pub/Sub for unknown or disconnected mailboxes to avoid retries.
+      return NextResponse.json({
+        success: true,
+        skipped: true,
+        reason: "no_matching_tenant",
+        emailAddress: gmailEmail,
+      })
+    }
+
+    return NextResponse.json({ success: false }, { status: 404 })
+  }
 
   for (const tenantId of attempts) {
     const { result, isMatched, isSuccess } = await processForTenant(
