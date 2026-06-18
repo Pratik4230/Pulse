@@ -108,42 +108,53 @@ export const STARTER_SUGGESTION_GROUPS: StarterSuggestionGroup[] = [
     items: [
       {
         lang: "English",
-        text: "Schedule a 30-minute interview with alex@company.com on Friday at 10:00am, send a confirmation email, and include the agenda (2 bullets).",
+        text: "Schedule a 30-minute interview with pratikjadhav9534@gmail.com on Friday at 10:00am, send a confirmation email, and include the agenda (2 bullets).",
       },
       {
         lang: "Hindi",
-        text: "शुक्रवार 10:00am पर alex@company.com के साथ 30-मिनट इंटरव्यू शेड्यूल करो, confirmation email भेजो, और agenda 2 बिंदु में लिखो।",
+        text: "शुक्रवार 10:00am पर pratikjadhav9534@gmail.com के साथ 30-मिनट इंटरव्यू शेड्यूल करो, confirmation email भेजो, और agenda 2 बिंदु में लिखो।",
       },
       {
         lang: "Marathi",
-        text: "शुक्रवारी सकाळी 10:00 वाजता alex@company.com सोबत 30-मिनिट इंटरव्यू शेड्यूल करा, confirmation email पाठवा, आणि agenda 2 पॉइंट्समध्ये द्या।",
+        text: "शुक्रवारी सकाळी 10:00 वाजता pratikjadhav9534@gmail.com सोबत 30-मिनिट इंटरव्यू शेड्यूल करा, confirmation email पाठवा, आणि agenda 2 पॉइंट्समध्ये द्या।",
       },
       {
         lang: "Bengali",
-        text: "শুক্রবার সকাল ১০:০০টায় alex@company.com-এর সাথে ৩০ মিনিটের ইন্টারভিউ শেডিউল করো, confirmation ইমেইল পাঠাও, এবং agenda ২টা পয়েন্টে লিখো।",
+        text: "শুক্রবার সকাল ১০:০০টায় pratikjadhav9534@gmail.com-এর সাথে ৩০ মিনিটের ইন্টারভিউ শেডিউল করো, confirmation ইমেইল পাঠাও, এবং agenda ২টা পয়েন্টে লিখো।",
       },
       {
         lang: "Tamil",
-        text: "வெள்ளிக்கிழமை காலை 10:00க்கு alex@company.com-க்கு 30 நிமிட interview schedule பண்ணு, confirmation email அனுப்பு, agenda-வை 2 bullets-ஆ சொல்லு.",
+        text: "வெள்ளிக்கிழமை காலை 10:00க்கு pratikjadhav9534@gmail.com-க்கு 30 நிமிட interview schedule பண்ணு, confirmation email அனுப்பு, agenda-வை 2 bullets-ஆ சொல்லு.",
       },
       {
         lang: "Telugu",
-        text: "శుక్రవారం ఉదయం 10:00కి alex@company.com‌తో 30 నిమిషాల ఇంటర్వ్యూ షెడ్యూల్ చేయి, confirmation email పంపి, agenda ని 2 పాయింట్లలో ఉంచు.",
+        text: "శుక్రవారం ఉదయం 10:00కి pratikjadhav9534@gmail.com‌తో 30 నిమిషాల ఇంటర్వ్యూ షెడ్యూల్ చేయి, confirmation email పంపి, agenda ని 2 పాయింట్లలో ఉంచు.",
       },
       {
         lang: "Kannada",
-        text: "ಶುಕ್ರವಾರ ಬೆಳಿಗ್ಗೆ 10:00ಕ್ಕೆ alex@company.com ಜೊತೆ 30 ನಿಮಿಷದ interview ಶೆಡ್ಯೂಲ್ ಮಾಡಿ, confirmation email ಕಳುಹಿಸಿ, agenda ಅನ್ನು 2 bullets ನಲ್ಲಿ ಸೇರಿಸಿ.",
+        text: "ಶುಕ್ರವಾರ ಬೆಳಿಗ್ಗೆ 10:00ಕ್ಕೆ pratikjadhav9534@gmail.com ಜೊತೆ 30 ನಿಮಿಷದ interview ಶೆಡ್ಯೂಲ್ ಮಾಡಿ, confirmation email ಕಳುಹಿಸಿ, agenda ಅನ್ನು 2 bullets ನಲ್ಲಿ ಸೇರಿಸಿ.",
       },
       {
         lang: "Punjabi",
-        text: "ਸ਼ੁੱਕਰਵਾਰ 10:00am ਨੂੰ alex@company.com ਨਾਲ 30 ਮਿੰਟ ਦੀ interview schedule ਕਰੋ, confirmation email ਭੇਜੋ, ਅਤੇ agenda 2 bullets ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ।",
+        text: "ਸ਼ੁੱਕਰਵਾਰ 10:00am ਨੂੰ pratikjadhav9534@gmail.com ਨਾਲ 30 ਮਿੰਟ ਦੀ interview schedule ਕਰੋ, confirmation email ਭੇਜੋ, ਅਤੇ agenda 2 bullets ਵਿੱਚ ਸ਼ਾਮਲ ਕਰੋ।",
       },
       {
         lang: "Gujarati",
-        text: "શુક્રવારે સવારે 10:00 વાગ્યે alex@company.com સાથે 30 મિનિટનું interview શેડ્યૂલ કરો, confirmation email મોકલો, અને agenda 2 bulletsમાં ઉમેરો.",
+        text: "શુક્રવારે સવારે 10:00 વાગ્યે pratikjadhav9534@gmail.com સાથે 30 મિનિટનું interview શેડ્યૂલ કરો, confirmation email મોકલો, અને agenda 2 bulletsમાં ઉમેરો.",
       },
     ],
   },
+]
+
+/** Seven curated prompts for the Pulse empty state (one list). */
+export const STARTER_SUGGESTIONS: StarterSuggestion[] = [
+  STARTER_SUGGESTION_GROUPS[0].items[0],
+  STARTER_SUGGESTION_GROUPS[1].items[0],
+  STARTER_SUGGESTION_GROUPS[2].items[0],
+  STARTER_SUGGESTION_GROUPS[0].items[1],
+  STARTER_SUGGESTION_GROUPS[1].items[1],
+  STARTER_SUGGESTION_GROUPS[2].items[1],
+  STARTER_SUGGESTION_GROUPS[0].items[2],
 ]
 
 export const STARTER_LANGUAGES = [

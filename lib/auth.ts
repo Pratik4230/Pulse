@@ -9,7 +9,9 @@ import { localeSchema } from "@/features/auth/validations"
 import { COUNTRY_CODES, getCurrencyByCountry } from "@/lib/currencies"
 import { sendEmail, sendOtpEmail } from "@/lib/email"
 import { getAuthTrustedOrigins } from "@/lib/auth-origins"
+import { betterAuthRedisStorage } from "@/lib/better-auth-redis"
 import { createDodoPaymentsAuthPlugin } from "@/lib/billing/dodo-plugin"
+import { isRedisConfigured } from "@/lib/redis"
 import { getDefaultTimezone, getTimezoneOptions } from "@/lib/timezones"
 
 const dodoPaymentsPlugin = createDodoPaymentsAuthPlugin()
@@ -114,6 +116,24 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
+  ...(isRedisConfigured()
+    ? {
+        secondaryStorage: betterAuthRedisStorage,
+        rateLimit: {
+          enabled: true,
+          storage: "secondary-storage" as const,
+          window: 60,
+          max: 100,
+          customRules: {
+            "/get-session": false,
+            "/sign-in/email": { window: 10, max: 5 },
+            "/sign-up/email": { window: 3600, max: 10 },
+            "/forget-password": { window: 3600, max: 5 },
+            "/reset-password": { window: 600, max: 5 },
+          },
+        },
+      }
+    : {}),
   plugins: [
     emailOTP({
       overrideDefaultEmailVerification: true,

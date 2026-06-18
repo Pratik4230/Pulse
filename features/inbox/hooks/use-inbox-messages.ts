@@ -6,6 +6,7 @@ import {
 import { useEffect, useMemo, useRef } from "react"
 
 import type { InboxFilter, InboxListItem, InboxListPage } from "../types"
+import { isRateLimitError, notifyRateLimitError, throwApiError } from "@/lib/api-client"
 
 async function fetchInboxPage(
   filter: InboxFilter,
@@ -17,18 +18,17 @@ async function fetchInboxPage(
   if (pageToken) params.set("pageToken", pageToken)
 
   const response = await fetch(`/api/inbox/messages?${params}`)
-
-  if (!response.ok) {
-    const data = (await response.json().catch(() => null)) as {
-      error?: string
-      code?: string
-    } | null
-    const error = new Error(data?.error ?? "Failed to load inbox")
-    ;(error as Error & { code?: string }).code = data?.code
-    throw error
+  const data = (await response.json().catch(() => ({}))) as InboxListPage & {
+    error?: string
+    code?: string
+    retryAfterSeconds?: number
   }
 
-  return response.json() as Promise<InboxListPage>
+  if (!response.ok) {
+    throwApiError(response.status, data)
+  }
+
+  return data
 }
 
 async function fetchEnrichedMessages(ids: string[], filter: InboxFilter) {
@@ -38,14 +38,18 @@ async function fetchEnrichedMessages(ids: string[], filter: InboxFilter) {
     body: JSON.stringify({ ids, filter }),
   })
 
-  if (!response.ok) {
-    const data = (await response.json().catch(() => null)) as {
-      error?: string
-    } | null
-    throw new Error(data?.error ?? "Failed to enrich inbox messages")
+  const data = (await response.json().catch(() => ({}))) as {
+    messages: InboxListItem[]
+    error?: string
+    code?: string
+    retryAfterSeconds?: number
   }
 
-  return response.json() as Promise<{ messages: InboxListItem[] }>
+  if (!response.ok) {
+    throwApiError(response.status, data)
+  }
+
+  return data
 }
 
 function mergeEnrichedItem(
@@ -140,7 +144,11 @@ export function useInboxMessages(
             current ? mergeEnrichedIntoPages(current, enriched) : current,
         )
       })
-      .catch(() => {
+      .catch((error) => {
+        if (isRateLimitError(error)) {
+          notifyRateLimitError(error)
+        }
+
         for (const id of pendingIds) {
           enrichingIdsRef.current.delete(id)
         }

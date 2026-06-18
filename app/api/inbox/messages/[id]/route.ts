@@ -6,6 +6,7 @@ import {
   ensureCorsairTenant,
   getIntegrationStatuses,
 } from "@/features/integrations/core/server/tenant"
+import { userRateLimitResponse } from "@/lib/rate-limit"
 
 export const runtime = "nodejs"
 
@@ -18,6 +19,11 @@ export async function GET(request: Request, context: RouteContext) {
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const limited = await userRateLimitResponse(session.user.id, "inbox")
+  if (limited) {
+    return limited
   }
 
   const { id } = await context.params

@@ -5,6 +5,7 @@ import type { InboxFilter } from "@/features/inbox/types"
 import { inboxMessagesQuerySchema } from "@/features/inbox/validations"
 import { getSessionFromRequest } from "@/features/integrations/core/server/session"
 import { ensureCorsairTenant, getIntegrationStatuses } from "@/features/integrations/core/server/tenant"
+import { userRateLimitResponse } from "@/lib/rate-limit"
 
 export const runtime = "nodejs"
 
@@ -13,6 +14,11 @@ export async function GET(request: Request) {
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const limited = await userRateLimitResponse(session.user.id, "inbox")
+  if (limited) {
+    return limited
   }
 
   const tenantId = session.user.id

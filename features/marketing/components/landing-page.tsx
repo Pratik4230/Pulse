@@ -272,8 +272,9 @@ export function LandingPage() {
                       Example (English)
                     </p>
                     <p className="text-sm leading-relaxed text-foreground">
-                      Schedule a 30-minute interview with alex@company.com on
-                      Friday at 10am and send a confirmation email.
+                      Schedule a 30-minute interview with
+                      pratikjadhav9534@gmail.com on Friday at 10am and send a
+                      confirmation email.
                     </p>
                   </div>
                 </div>

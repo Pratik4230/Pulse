@@ -9,8 +9,14 @@ import {
 import type { IntegrationId } from "@/features/integrations/core/types"
 import { invalidateIntegrationStatusCache } from "@/features/integrations/core/server/tenant"
 import { registerIntegrationWebhooks } from "@/features/integrations/core/server/webhook-subscriptions"
+import { ipRateLimitResponse } from "@/lib/rate-limit"
 
 export async function GET(request: Request) {
+  const limited = await ipRateLimitResponse(request, "oauth-callback")
+  if (limited) {
+    return limited
+  }
+
   const url = new URL(request.url)
   const error = url.searchParams.get("error")
   const code = url.searchParams.get("code")

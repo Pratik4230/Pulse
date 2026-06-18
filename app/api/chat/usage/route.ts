@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { getDailyAiUsage } from "@/lib/billing/ai-usage"
 import { getUserLocale } from "@/features/user/server/get-user-locale"
+import { userRateLimitResponse } from "@/lib/rate-limit"
 
 export async function GET(req: Request) {
   const session = await auth.api.getSession({
@@ -9,6 +10,11 @@ export async function GET(req: Request) {
 
   if (!session) {
     return new Response("Unauthorized", { status: 401 })
+  }
+
+  const limited = await userRateLimitResponse(session.user.id, "api-read")
+  if (limited) {
+    return limited
   }
 
   const locale = await getUserLocale(session.user.id)

@@ -8,6 +8,7 @@ import type {
   CalendarEventsResponse,
   CreateCalendarEventInput,
 } from "../types"
+import { throwApiError } from "@/lib/api-client"
 
 async function fetchCalendarEvents({
   days,
@@ -33,17 +34,17 @@ async function fetchCalendarEvents({
     query ? `/api/calendar/events?${query}` : "/api/calendar/events",
   )
 
-  if (!response.ok) {
-    const data = (await response.json().catch(() => null)) as {
-      error?: string
-      code?: string
-    } | null
-    const error = new Error(data?.error ?? "Failed to load calendar events")
-    ;(error as Error & { code?: string }).code = data?.code
-    throw error
+  const data = (await response.json().catch(() => ({}))) as CalendarEventsResponse & {
+    error?: string
+    code?: string
+    retryAfterSeconds?: number
   }
 
-  return response.json() as Promise<CalendarEventsResponse>
+  if (!response.ok) {
+    throwApiError(response.status, data)
+  }
+
+  return data
 }
 
 export async function fetchCalendarEventsPage(options: {
@@ -61,14 +62,18 @@ async function createCalendarEvent(input: CreateCalendarEventInput) {
     body: JSON.stringify(input),
   })
 
-  if (!response.ok) {
-    const data = (await response.json().catch(() => null)) as {
-      error?: string
-    } | null
-    throw new Error(data?.error ?? "Failed to create calendar event")
+  const data = (await response.json().catch(() => ({}))) as {
+    event: CalendarEventsResponse["events"][number]
+    error?: string
+    code?: string
+    retryAfterSeconds?: number
   }
 
-  return response.json() as Promise<{ event: CalendarEventsResponse["events"][number] }>
+  if (!response.ok) {
+    throwApiError(response.status, data)
+  }
+
+  return data
 }
 
 export function calendarEventsQueryKey(

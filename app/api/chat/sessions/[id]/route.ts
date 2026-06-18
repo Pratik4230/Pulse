@@ -4,6 +4,7 @@ import {
   getChatSessionForUser,
 } from "@/features/pulse/server/chat-store"
 import { chatRouteParamsSchema } from "@/features/pulse/validations"
+import { userRateLimitResponse } from "@/lib/rate-limit"
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -13,6 +14,11 @@ export async function DELETE(_req: Request, context: RouteContext) {
   const session = await auth.api.getSession({ headers: _req.headers })
   if (!session) {
     return new Response("Unauthorized", { status: 401 })
+  }
+
+  const limited = await userRateLimitResponse(session.user.id, "api-read")
+  if (limited) {
+    return limited
   }
 
   const parsedParams = chatRouteParamsSchema.safeParse(await context.params)

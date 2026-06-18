@@ -2,12 +2,18 @@ import { NextResponse } from "next/server"
 
 import { getIntegrationStatuses } from "@/features/integrations/core/server/tenant"
 import { getSessionFromRequest } from "@/features/integrations/core/server/session"
+import { userRateLimitResponse } from "@/lib/rate-limit"
 
 export async function GET(request: Request) {
   const session = await getSessionFromRequest(request)
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const limited = await userRateLimitResponse(session.user.id, "api-read")
+  if (limited) {
+    return limited
   }
 
   try {

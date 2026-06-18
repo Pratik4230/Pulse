@@ -4,19 +4,14 @@ import type {
   IntegrationId,
   IntegrationStatus,
 } from "@/features/integrations/core/types"
+import { fetchJson } from "@/lib/api-client"
 
 export type IntegrationsStatusResponse = {
   integrations: Record<IntegrationId, IntegrationStatus>
 }
 
 async function fetchIntegrationStatus() {
-  const response = await fetch("/api/integrations/status")
-
-  if (!response.ok) {
-    throw new Error("Failed to load integrations")
-  }
-
-  return response.json() as Promise<IntegrationsStatusResponse>
+  return fetchJson<IntegrationsStatusResponse>("/api/integrations/status")
 }
 
 export function useIntegrationsStatus() {

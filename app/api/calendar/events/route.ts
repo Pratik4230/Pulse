@@ -15,14 +15,24 @@ import {
   getIntegrationStatuses,
 } from "@/features/integrations/core/server/tenant"
 import { resolveUserLocale } from "@/lib/locale"
+import { userRateLimitResponse } from "@/lib/rate-limit"
 
 export const runtime = "nodejs"
+
+async function guardCalendarRateLimit(userId: string) {
+  return userRateLimitResponse(userId, "calendar")
+}
 
 export async function GET(request: Request) {
   const session = await getSessionFromRequest(request)
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const limited = await guardCalendarRateLimit(session.user.id)
+  if (limited) {
+    return limited
   }
 
   const tenantId = session.user.id
@@ -80,6 +90,11 @@ export async function POST(request: Request) {
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const limited = await guardCalendarRateLimit(session.user.id)
+  if (limited) {
+    return limited
   }
 
   const tenantId = session.user.id

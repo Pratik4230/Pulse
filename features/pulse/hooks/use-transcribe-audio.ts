@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query"
 
 import { voiceRecordingFilename } from "@/features/pulse/validations"
+import { throwApiError, type ApiErrorBody } from "@/lib/api-client"
 
 type TranscribeResponse = {
   transcript: string
@@ -16,12 +17,10 @@ async function transcribeAudio(blob: Blob): Promise<TranscribeResponse> {
     body: formData,
   })
 
-  const body = (await response.json()) as TranscribeResponse & {
-    error?: string
-  }
+  const body = (await response.json()) as TranscribeResponse & ApiErrorBody
 
   if (!response.ok) {
-    throw new Error(body.error ?? "Could not transcribe audio")
+    throwApiError(response.status, body)
   }
 
   return body

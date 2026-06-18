@@ -23,6 +23,13 @@ import { SpeechInput } from "@/components/ai-elements/speech-input"
 import { Button } from "@/components/ui/button"
 import { Shimmer } from "@/components/ai-elements/shimmer"
 import { cn } from "@/lib/utils"
+import {
+  assertOkResponse,
+  formatRateLimitMessage,
+  getRateLimitRetrySeconds,
+  isRateLimitError,
+  notifyRateLimitError,
+} from "@/lib/api-client"
 
 import { fetchOlderChatMessages } from "@/features/pulse/hooks/use-chat-messages"
 import { useAiUsage } from "@/features/pulse/hooks/use-ai-usage"
@@ -42,6 +49,13 @@ const pulseChatTransport = new DefaultChatTransport({
   body: () => ({
     sessionId: pulseChatSessionId.value,
   }),
+  fetch: async (input, init) => {
+    const response = await fetch(input, init)
+    if (!response.ok) {
+      await assertOkResponse(response)
+    }
+    return response
+  },
 })
 const CHAT_INPUT_ID = "pulse-chat-input"
 
@@ -93,6 +107,12 @@ export function PulseChat({
       void refetchAiUsage()
     },
     onError: (chatError) => {
+      if (isRateLimitError(chatError)) {
+        notifyRateLimitError(chatError)
+        void refetchAiUsage()
+        return
+      }
+
       if (
         chatError.message.includes("Pulse AI messages per day") ||
         chatError.message.includes("AI_DAILY_LIMIT")
@@ -188,8 +208,10 @@ export function PulseChat({
       try {
         const result = await transcribeAudio.mutateAsync(audioBlob)
         return result.transcript
-      } catch {
-        handleTranscriptionError()
+      } catch (error) {
+        if (!isRateLimitError(error)) {
+          handleTranscriptionError()
+        }
         return ""
       }
     },
@@ -290,7 +312,9 @@ export function PulseChat({
 
           {error ? (
             <p className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
-              {error.message}
+              {isRateLimitError(error)
+                ? formatRateLimitMessage(getRateLimitRetrySeconds(error))
+                : error.message}
             </p>
           ) : null}
         </ConversationContent>

@@ -1,18 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 
 import type { InboxThreadDetail } from "../types"
+import { fetchJson } from "@/lib/api-client"
 
 async function fetchInboxThread(id: string) {
-  const response = await fetch(`/api/inbox/messages/${id}`)
-
-  if (!response.ok) {
-    const data = (await response.json().catch(() => null)) as {
-      error?: string
-    } | null
-    throw new Error(data?.error ?? "Failed to load message")
-  }
-
-  return response.json() as Promise<{ thread: InboxThreadDetail }>
+  return fetchJson<{ thread: InboxThreadDetail }>(`/api/inbox/messages/${id}`)
 }
 
 export function inboxThreadQueryKey(id: string) {

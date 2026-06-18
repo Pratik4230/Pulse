@@ -35,9 +35,6 @@ export function InboxToolbar({
     <div className="border-b border-border/80 bg-card/60">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Inbox
-          </h2>
           <Tabs
             value={filter}
             onValueChange={(value) => onFilterChange(value as InboxFilter)}

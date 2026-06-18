@@ -4,11 +4,20 @@ import {
   voiceRecordingFilename,
 } from "@/features/pulse/validations"
 import { transcribeAudioWithSarvam } from "@/features/pulse/server/sarvam-transcribe"
+import {
+  checkTranscribeRateLimit,
+  rateLimitJsonResponse,
+} from "@/lib/rate-limit"
 
 export async function POST(req: Request) {
   const session = await auth.api.getSession({ headers: req.headers })
   if (!session) {
     return new Response("Unauthorized", { status: 401 })
+  }
+
+  const burstLimit = await checkTranscribeRateLimit(session.user.id)
+  if (!burstLimit.ok) {
+    return rateLimitJsonResponse(burstLimit.reset)
   }
 
   let formData: FormData

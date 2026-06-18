@@ -7,13 +7,11 @@ import {
   LogOut,
   MessageSquare,
   MessageSquarePlus,
-  Plug,
   Settings,
   Sparkles,
   Trash2,
 } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { PulseLogo } from "@/components/brand/pulse-logo"
@@ -41,6 +39,7 @@ import {
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
 import { signOut, useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
+import { isRateLimitError } from "@/lib/api-client"
 import { useDeleteChatSession } from "@/features/pulse/hooks/use-chat-sessions"
 
 import type { ChatSessionListItem } from "@/features/pulse/types/chat"
@@ -80,11 +79,6 @@ export function PulseSidebar({
   const pathname = usePathname()
   const { data: session } = useSession()
   const deleteChatSession = useDeleteChatSession()
-  const [isMac, setIsMac] = useState(false)
-
-  useEffect(() => {
-    setIsMac(window.navigator.platform.toLowerCase().includes("mac"))
-  }, [])
 
   async function handleDeleteChat(sessionId: string) {
     if (isStreaming) {
@@ -96,8 +90,10 @@ export function PulseSidebar({
       await deleteChatSession.mutateAsync(sessionId)
       onDeleteSession?.(sessionId)
       toast.success("Conversation deleted")
-    } catch {
-      toast.error("Could not delete conversation")
+    } catch (error) {
+      if (!isRateLimitError(error)) {
+        toast.error("Could not delete conversation")
+      }
     }
   }
   async function handleSignOut() {
@@ -262,7 +258,7 @@ export function PulseSidebar({
               <div className="flex items-center gap-2">
                 <span>Open command palette</span>
                 <KbdGroup>
-                  <Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
+                  <Kbd>⌘</Kbd>
                   <Kbd>K</Kbd>
                 </KbdGroup>
               </div>

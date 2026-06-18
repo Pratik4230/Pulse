@@ -13,6 +13,11 @@ import {
   countNewUserTurns,
   reserveDailyAiMessages,
 } from "@/lib/billing/ai-usage"
+import { isProPlan } from "@/lib/billing/plans"
+import {
+  checkChatRateLimit,
+  rateLimitJsonResponse,
+} from "@/lib/rate-limit"
 import { getAppBaseUrl } from "@/features/integrations/core/lib/oauth"
 import {
   ensureCorsairTenant,
@@ -77,6 +82,13 @@ export async function POST(req: Request) {
   const locale = await getUserLocale(tenantId)
   const plan =
     typeof session.user.plan === "string" ? session.user.plan : "free"
+
+  if (newUserTurns > 0) {
+    const burstLimit = await checkChatRateLimit(tenantId, isProPlan(plan))
+    if (!burstLimit.ok) {
+      return rateLimitJsonResponse(burstLimit.reset)
+    }
+  }
 
   if (newUserTurns > 0) {
     const reservation = await reserveDailyAiMessages(

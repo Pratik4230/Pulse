@@ -1,93 +1,17 @@
 "use client"
 
-import { ChevronDown, ChevronRight } from "lucide-react"
-import { useCallback, useState } from "react"
+import { ChevronRight, Sparkles } from "lucide-react"
+import { useCallback } from "react"
 
 import { PulseLogo } from "@/components/brand/pulse-logo"
-import { Button } from "@/components/ui/button"
 import {
   STARTER_LANGUAGES,
-  STARTER_SUGGESTION_GROUPS,
-  type StarterSuggestionGroup,
+  STARTER_SUGGESTIONS,
 } from "@/features/pulse/lib/starter-suggestions"
 import { cn } from "@/lib/utils"
 
-const VISIBLE_COUNT = 3
-
 type PulseEmptyStateProps = {
   onSuggestion: (text: string) => void
-}
-
-function SuggestionGroupList({
-  group,
-  onSuggestion,
-}: {
-  group: StarterSuggestionGroup
-  onSuggestion: (text: string) => void
-}) {
-  const [expanded, setExpanded] = useState(false)
-  const hasMore = group.items.length > VISIBLE_COUNT
-  const visibleItems = expanded
-    ? group.items
-    : group.items.slice(0, VISIBLE_COUNT)
-  const Icon = group.icon
-
-  return (
-    <section className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-elevated">
-      <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
-        <Icon className="size-4 text-warm-muted" aria-hidden />
-        <h3 className="text-xs font-semibold tracking-wider text-warm-muted uppercase">
-          {group.title}
-        </h3>
-      </div>
-
-      <ul className="divide-y divide-border/60">
-        {visibleItems.map((item) => (
-          <li
-            key={`${group.id}-${item.lang}`}
-            className="group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-accent/40"
-          >
-            <span className="w-20 shrink-0 select-none text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-              {item.lang}
-            </span>
-            <p className="min-w-0 flex-1 select-text cursor-text text-sm leading-snug text-foreground">
-              {item.text}
-            </p>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0 text-warm-muted hover:text-foreground"
-              aria-label={`Use suggestion: ${item.text}`}
-              onClick={() => onSuggestion(item.text)}
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-          </li>
-        ))}
-      </ul>
-
-      {hasMore ? (
-        <div className="border-t border-border/60 px-4 py-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="mx-auto flex w-full text-muted-foreground hover:text-foreground"
-            onClick={() => setExpanded((current) => !current)}
-          >
-            {expanded ? "Show less" : "Show more"}
-            <ChevronDown
-              className={cn(
-                "size-4 transition-transform",
-                expanded && "rotate-180",
-              )}
-            />
-          </Button>
-        </div>
-      ) : null}
-    </section>
-  )
 }
 
 export function PulseEmptyState({ onSuggestion }: PulseEmptyStateProps) {
@@ -95,7 +19,7 @@ export function PulseEmptyState({ onSuggestion }: PulseEmptyStateProps) {
     (text: string) => {
       onSuggestion(text)
     },
-    [onSuggestion],
+    [onSuggestion]
   )
 
   return (
@@ -109,7 +33,7 @@ export function PulseEmptyState({ onSuggestion }: PulseEmptyStateProps) {
       </div>
 
       <div className="relative flex w-full max-w-lg flex-col items-center">
-        <div className="shadow-elevated-lg rounded-2xl border border-border/70 bg-card p-3">
+        <div className="shadow-elevated-lg rounded-2xl border border-border/70 bg-card/70 p-3 backdrop-blur">
           <PulseLogo size={52} imageClassName="size-[52px]" />
         </div>
 
@@ -121,15 +45,41 @@ export function PulseEmptyState({ onSuggestion }: PulseEmptyStateProps) {
           {STARTER_LANGUAGES.join(", ")}.
         </p>
 
-        <div className="mt-8 flex w-full flex-col gap-4">
-          {STARTER_SUGGESTION_GROUPS.map((group) => (
-            <SuggestionGroupList
-              key={group.id}
-              group={group}
-              onSuggestion={handleSuggestion}
-            />
-          ))}
-        </div>
+        <section className="shadow-elevated-lg mt-8 w-full overflow-hidden rounded-2xl border border-border/70 bg-card/70 backdrop-blur supports-backdrop-filter:bg-card/60">
+          <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
+            <Sparkles className="size-4 text-warm-muted" aria-hidden />
+            <h3 className="text-xs font-semibold tracking-wider text-warm-muted uppercase">
+              Try asking
+            </h3>
+          </div>
+
+          <ul className="divide-y divide-border/60">
+            {STARTER_SUGGESTIONS.map((item) => (
+              <li key={item.lang + item.text.slice(0, 24)}>
+                <button
+                  type="button"
+                  className={cn(
+                    "group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors",
+                    "hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none"
+                  )}
+                  aria-label={`Use suggestion: ${item.text}`}
+                  onClick={() => handleSuggestion(item.text)}
+                >
+                  <span className="w-18 shrink-0 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+                    {item.lang}
+                  </span>
+                  <p className="min-w-0 flex-1 text-sm leading-snug text-foreground line-clamp-2">
+                    {item.text}
+                  </p>
+                  <ChevronRight
+                    className="size-4 shrink-0 text-warm-muted/60 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+                    aria-hidden
+                  />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </div>
   )

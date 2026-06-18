@@ -6,6 +6,7 @@ import {
   extractGmailPubSubEmail,
   resolveWebhookTenantAttempts,
 } from "@/features/integrations/core/server/webhook-tenant"
+import { ipRateLimitResponse } from "@/lib/rate-limit"
 
 function headersFromRequest(request: NextRequest) {
   const headers: Record<string, string> = {}
@@ -49,6 +50,11 @@ async function processForTenant(
 }
 
 export async function POST(request: NextRequest) {
+  const limited = await ipRateLimitResponse(request, "webhook")
+  if (limited) {
+    return limited
+  }
+
   const headers = headersFromRequest(request)
   const rawBody = await bodyFromRequest(request)
   const body =
