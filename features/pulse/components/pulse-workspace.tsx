@@ -142,7 +142,7 @@ export function PulseWorkspace() {
     >
       {showMessagesLoading ? (
         <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-          Loading conversation…
+          Loading conversation...
         </div>
       ) : (
         <PulseChat

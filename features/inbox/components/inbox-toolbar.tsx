@@ -82,7 +82,7 @@ export function InboxToolbar({
             id={INBOX_SEARCH_INPUT_ID}
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search inbox…"
+            placeholder="Search inbox..."
             maxLength={200}
             className="h-9 bg-background/80 pr-9 pl-9"
           />

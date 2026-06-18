@@ -105,7 +105,7 @@ export function BillingSettings({
               {portal.isPending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Opening portal…
+                  Opening portal...
                 </>
               ) : (
                 "Manage subscription"
@@ -179,10 +179,10 @@ export function BillingSettings({
                 {checkout.isPending ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    Redirecting…
+                    Redirecting...
                   </>
                 ) : dodoConfigured ? (
-                  `Upgrade — ${proPrice.formatted}/mo`
+                  `Upgrade - ${proPrice.formatted}/mo`
                 ) : (
                   "Checkout available after Dodo setup"
                 )}

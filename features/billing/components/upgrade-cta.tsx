@@ -16,7 +16,7 @@ type UpgradeCtaProps = {
 export function UpgradeCta({
   className,
   title = "Upgrade to Pulse Pro",
-  description = "Unlimited Pulse AI and voice — inbox and calendar stay free.",
+  description = "Unlimited Pulse AI and voice. Inbox and calendar stay free.",
   compact = false,
 }: UpgradeCtaProps) {
   return (

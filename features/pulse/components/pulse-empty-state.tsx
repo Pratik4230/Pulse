@@ -41,7 +41,7 @@ export function PulseEmptyState({ onSuggestion }: PulseEmptyStateProps) {
           What can I help you with today?
         </h2>
         <p className="mt-2 max-w-md text-center text-[15px] leading-relaxed text-muted-foreground">
-          Gmail, Calendar, or both — type or use the mic in{" "}
+          Gmail, Calendar, or both type or use the mic in{" "}
           {STARTER_LANGUAGES.join(", ")}.
         </p>
 
@@ -68,7 +68,7 @@ export function PulseEmptyState({ onSuggestion }: PulseEmptyStateProps) {
                   <span className="w-18 shrink-0 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                     {item.lang}
                   </span>
-                  <p className="min-w-0 flex-1 text-sm leading-snug text-foreground line-clamp-2">
+                  <p className="line-clamp-2 min-w-0 flex-1 text-sm leading-snug text-foreground">
                     {item.text}
                   </p>
                   <ChevronRight

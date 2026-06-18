@@ -193,7 +193,7 @@ export function CalendarEventList({
               disabled={isFetchingNextPage}
               onClick={onLoadMore}
             >
-              {isFetchingNextPage ? "Loading more…" : "Load more events"}
+              {isFetchingNextPage ? "Loading more..." : "Load more events"}
             </Button>
           ) : (
             <span className="text-xs text-muted-foreground">

@@ -143,7 +143,7 @@ export function InboxWorkspace() {
   if (isStatusLoading && !messages?.length && isListLoading) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-        Loading inbox…
+        Loading inbox...
       </div>
     )
   }

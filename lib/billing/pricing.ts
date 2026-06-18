@@ -9,7 +9,7 @@ export type ProPriceDisplay = {
   periodLabel: string
 }
 
-/** Default $80/mo — override with PRO_PRICE_USD env (minor units, e.g. 8000). */
+/** Default $80/mo - override with PRO_PRICE_USD env (minor units, e.g. 8000). */
 const DEFAULT_PRO_PRICE_USD_MINOR = 8_000
 
 function readProPriceUsdMinor() {
@@ -23,7 +23,7 @@ export function getFreeDisplayPrice() {
   return formatMoney(0, PRO_DISPLAY_CURRENCY)
 }
 
-/** Pro plan price for all UI — always shown in USD. */
+/** Pro plan price for all UI - always shown in USD. */
 export function getProDisplayPrice(): ProPriceDisplay {
   const monthlyMinor =
     readProPriceUsdMinor() ?? DEFAULT_PRO_PRICE_USD_MINOR

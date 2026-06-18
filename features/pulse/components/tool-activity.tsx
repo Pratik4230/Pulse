@@ -17,7 +17,7 @@ export function ToolStatusLine({ status }: ToolStatusLineProps) {
 
   return (
     <div className="text-xs text-muted-foreground/80">
-      <Shimmer as="span">{`${status.label}…`}</Shimmer>
+      <Shimmer as="span">{`${status.label}...`}</Shimmer>
     </div>
   )
 }

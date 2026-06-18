@@ -44,7 +44,7 @@ function formatEventTimeRange(event: CalendarEventItem) {
     minute: "2-digit",
   })
 
-  return `${formatter.format(start)} – ${formatter.format(end)}`
+  return `${formatter.format(start)} - ${formatter.format(end)}`
 }
 
 function getInitials(name: string) {

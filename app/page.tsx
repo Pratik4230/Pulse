@@ -14,7 +14,7 @@ export default async function Page() {
       headers: await headers(),
     })
   } catch {
-    // Database unreachable — show landing page.
+    // Database unreachable - show landing page.
   }
 
   if (session?.user.emailVerified) {

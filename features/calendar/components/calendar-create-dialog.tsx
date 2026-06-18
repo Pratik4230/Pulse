@@ -198,7 +198,7 @@ export function CalendarCreateDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={createEvent.isPending}>
-              {createEvent.isPending ? "Creating…" : "Create event"}
+              {createEvent.isPending ? "Creating..." : "Create event"}
             </Button>
           </DialogFooter>
         </form>

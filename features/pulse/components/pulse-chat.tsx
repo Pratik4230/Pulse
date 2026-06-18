@@ -200,7 +200,7 @@ export function PulseChat({
   }, [])
 
   const handleMaxRecordingDuration = useCallback(() => {
-    toast.message("Recording stopped — 27 second limit reached")
+    toast.message("Recording stopped: 27 second limit reached")
   }, [])
 
   const handleAudioRecorded = useCallback(
@@ -286,7 +286,7 @@ export function PulseChat({
                 disabled={loadingOlder}
                 onClick={() => void handleLoadOlder()}
               >
-                {loadingOlder ? "Loading…" : "Load older messages"}
+                {loadingOlder ? "Loading..." : "Load older messages"}
               </Button>
             </div>
           ) : null}
@@ -304,7 +304,7 @@ export function PulseChat({
               <div className="size-8 shrink-0" />
               <div className="shadow-elevated rounded-2xl border border-border/60 bg-card px-5 py-4 sm:px-6">
                 <Shimmer className="text-sm text-muted-foreground">
-                  Thinking…
+                  Thinking...
                 </Shimmer>
               </div>
             </div>
@@ -353,7 +353,7 @@ export function PulseChat({
                 id={CHAT_INPUT_ID}
                 maxLength={CHAT_MAX_MESSAGE_CHARS}
                 className="min-h-16 flex-1 resize-none bg-transparent px-5 py-4 text-[18px] leading-relaxed placeholder:text-muted-foreground/70"
-                placeholder="Message Pulse…"
+                placeholder="Message Pulse..."
               />
             </PromptInputBody>
             <PromptInputFooter className="border-t border-border/60 bg-muted/20 px-3 py-2">

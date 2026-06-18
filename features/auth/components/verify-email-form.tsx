@@ -197,7 +197,7 @@ export function VerifyEmailForm() {
           disabled={isResending || !email}
           onClick={handleResend}
         >
-          {isResending ? "Sending…" : "Resend code"}
+          {isResending ? "Sending..." : "Resend code"}
         </Button>
         <p className="text-center text-sm text-muted-foreground">
           Wrong email?{" "}

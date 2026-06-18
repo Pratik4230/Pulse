@@ -86,7 +86,7 @@ export function CalendarWeekGrid({
                   <Skeleton className="h-12 w-full rounded-md" />
                 ) : dayEvents.length === 0 ? (
                   <p className="px-1 py-2 text-center text-[10px] text-muted-foreground/70">
-                    —
+                    -
                   </p>
                 ) : (
                   dayEvents.map((event) => (

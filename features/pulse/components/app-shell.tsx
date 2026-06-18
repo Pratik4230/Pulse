@@ -144,7 +144,7 @@ export function AppShell({
       />
       <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen}>
         <Command>
-          <CommandInput placeholder="Jump to inbox, calendar, pulse…" />
+          <CommandInput placeholder="Jump to inbox, calendar, pulse..." />
           <CommandList>
             <CommandEmpty>No commands found.</CommandEmpty>
             {Object.entries(grouped).map(([group, items]) => (
