@@ -18,7 +18,15 @@ async function bodyFromRequest(request: NextRequest) {
   const contentType = request.headers.get("content-type") ?? ""
 
   if (contentType.includes("application/json")) {
-    return request.json()
+    // Pub/Sub (and some webhook retries) can occasionally deliver an empty body
+    // with a JSON content-type. `request.json()` would throw "Unexpected end of JSON input".
+    const text = await request.text()
+    if (!text.trim()) return {}
+    try {
+      return JSON.parse(text) as Record<string, unknown>
+    } catch {
+      return { raw: text }
+    }
   }
 
   return request.text()
